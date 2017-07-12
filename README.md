@@ -37,19 +37,27 @@ Any `CONSUL_*` env that the native `consul` CLI tool supports are supported by t
 
 The most basic requirement is `export NOMAD_ADDR=http://<ip>:4646` and `export CONSUL_HTTP_ADDR=<ip>:8500`.
 
+### Consul
+
+`nomad-firehose` will use Consul to maintain leader-ship and store last event time processed (saved on quit or every 10s).
+
+This mean you can run more than 1 process of each firehose, and only one will actually do any work.
+
+Saving the last event time mean that restarting the process won't firehose all old changes to your sink, reducing duplicated events.
+
+The Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`.
+
 ## Usage
 
 The `nomad-firehose` binary has several helper subcommands.
 
-The sink type is specified via the `$SINK_TYPE` environment variable. Valid values are: `stdout`, `kinesis` and `amqp`.
+The sink type is configured using `$SINK_TYPE` environment variable. Valid values are: `stdout`, `kinesis` and `amqp`.
 
-The `amqp` sink is configured using `$SINK_AMQP_CONNECTION`, `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY` environment variables.
+The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY` environment variables.
 
 The `kinesis` sink is configured using `$SINK_KINESIS_STREAM_NAME` and `$SINK_KINESIS_PARTITION_KEY` environment variables.
 
-The `stdout` sink do not have any configuration.
-
-The script will use Consul to maintain leader and the last event time processed (saved on quit or every 10s).
+The `stdout` sink do not have any configuration, it will simply output the JSON to stdout for debugging.
 
 ### `allocations`
 
