@@ -1,8 +1,7 @@
-package allocations
+package nodes
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/signal"
 	"strconv"
@@ -11,12 +10,34 @@ import (
 	log "github.com/Sirupsen/logrus"
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/sink"
+	"github.com/seatgeek/nomad-firehose/helper"
 	"github.com/seatgeek/nomad-firehose/structs"
 )
 
-// NewAllocationFirehose ...
-func NewAllocationFirehose(lock *consul.Lock, sessionID string) (*AllocationFirehose, error) {
+const (
+	consulLockKey   = "nomad-firehose/clients.lock"
+	consulLockValue = "nomad-firehose/clients.value"
+)
+
+// Firehose ...
+type Firehose struct {
+	nomadClient     *nomad.Client
+	consulClient    *consul.Client
+	consulSessionID string
+	consulLock      *consul.Lock
+	stopCh          chan struct{}
+	lastChangeIndex uint64
+	sink            structs.Sink
+}
+
+// NewFirehose ...
+func NewFirehose() (*Firehose, error) {
+	lock, sessionID, err := helper.WaitForLock(consulLockKey)
+	if err != nil {
+		return nil, err
+	}
+	defer lock.Unlock()
+
 	nomadClient, err := nomad.NewClient(nomad.DefaultConfig())
 	if err != nil {
 		return nil, err
@@ -27,12 +48,12 @@ func NewAllocationFirehose(lock *consul.Lock, sessionID string) (*AllocationFire
 		return nil, err
 	}
 
-	sink, err := getSink()
+	sink, err := helper.GetSink()
 	if err != nil {
 		return nil, err
 	}
 
-	return &AllocationFirehose{
+	return &Firehose{
 		nomadClient:     nomadClient,
 		consulClient:    consulClient,
 		consulSessionID: sessionID,
@@ -41,28 +62,8 @@ func NewAllocationFirehose(lock *consul.Lock, sessionID string) (*AllocationFire
 	}, nil
 }
 
-func getSink() (structs.Sink, error) {
-	sinkType := os.Getenv("SINK_TYPE")
-	if sinkType == "" {
-		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, kinesis or stdout")
-	}
-
-	switch sinkType {
-	case "amqp":
-		fallthrough
-	case "rabbitmq":
-		return sink.NewRabbitmq()
-	case "kinesis":
-		return sink.NewKinesis()
-	case "stdout":
-		return sink.NewStdout()
-	default:
-		return nil, fmt.Errorf("Invalid SINK_TYPE: amqp, kinesis or stdout")
-	}
-}
-
 // Start the firehose
-func (f *AllocationFirehose) Start() error {
+func (f *Firehose) Start() error {
 	// Restore the last change time from Consul
 	err := f.restoreLastChangeTime()
 	if err != nil {
@@ -80,8 +81,8 @@ func (f *AllocationFirehose) Start() error {
 	// watch for allocation changes
 	go f.watch()
 
-	//
-	go f.persistLastChangeTime()
+	// Save the last event time every 10s
+	go f.persistLastChangeTime(10)
 
 	// wait forever for a stop signal to happen
 	for {
@@ -93,14 +94,14 @@ func (f *AllocationFirehose) Start() error {
 }
 
 // Stop the firehose
-func (f *AllocationFirehose) Stop() {
+func (f *Firehose) Stop() {
 	close(f.stopCh)
 	f.sink.Stop()
 	f.writeLastChangeTime()
 }
 
 // Read the Last Change Time from Consul KV, so we don't re-process tasks over and over on restart
-func (f *AllocationFirehose) restoreLastChangeTime() error {
+func (f *Firehose) restoreLastChangeTime() error {
 	kv, _, err := f.consulClient.KV().Get(consulLockValue, &consul.QueryOptions{})
 	if err != nil {
 		return err
@@ -114,7 +115,7 @@ func (f *AllocationFirehose) restoreLastChangeTime() error {
 			return err
 		}
 
-		f.lastChangeTime = v
+		f.lastChangeIndex = uint64(v)
 		log.Infof("Restoring Last Change Time to %s", sv)
 	} else {
 		log.Info("No Last Change Time restore point, starting from scratch")
@@ -126,8 +127,8 @@ func (f *AllocationFirehose) restoreLastChangeTime() error {
 // Write the Last Change Time to Consul so if the process restarts,
 // it will try to resume from where it left off, not emitting tons of double events for
 // old events
-func (f *AllocationFirehose) persistLastChangeTime() {
-	ticker := time.NewTicker(10 * time.Second)
+func (f *Firehose) persistLastChangeTime(interval time.Duration) {
+	ticker := time.NewTicker(interval * time.Second)
 
 	for {
 		select {
@@ -139,8 +140,8 @@ func (f *AllocationFirehose) persistLastChangeTime() {
 	}
 }
 
-func (f *AllocationFirehose) writeLastChangeTime() {
-	v := strconv.FormatInt(f.lastChangeTime, 10)
+func (f *Firehose) writeLastChangeTime() {
+	v := strconv.FormatUint(f.lastChangeIndex, 10)
 
 	log.Infof("Writing lastChangedTime to KV: %s", v)
 	kv := &consul.KVPair{
@@ -155,7 +156,7 @@ func (f *AllocationFirehose) writeLastChangeTime() {
 }
 
 // Publish an update from the firehose
-func (f *AllocationFirehose) Publish(update *structs.AllocationUpdate) {
+func (f *Firehose) Publish(update *nomad.Node) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -165,15 +166,15 @@ func (f *AllocationFirehose) Publish(update *structs.AllocationUpdate) {
 }
 
 // Continously watch for changes to the allocation list and publish it as updates
-func (f *AllocationFirehose) watch() {
+func (f *Firehose) watch() {
 	q := &nomad.QueryOptions{WaitIndex: 1, AllowStale: true}
 
-	newMax := f.lastChangeTime
+	newMax := f.lastChangeIndex
 
 	for {
-		allocations, meta, err := f.nomadClient.Allocations().List(q)
+		clients, meta, err := f.nomadClient.Nodes().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch allocations: %s", err)
+			log.Errorf("Unable to fetch clients: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -183,55 +184,41 @@ func (f *AllocationFirehose) watch() {
 
 		// Only work if the WaitIndex have changed
 		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Allocations index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+			log.Debugf("Clients index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
 			continue
 		}
 
-		log.Debugf("Allocations index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
+		log.Debugf("Clients index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
 
-		// Iterate allocations and find events that have changed since last run
-		for _, allocation := range allocations {
-			for taskName, taskInfo := range allocation.TaskStates {
-				for _, taskEvent := range taskInfo.Events {
-					if taskEvent.Time <= f.lastChangeTime {
-						continue
-					}
-
-					if taskEvent.Time > newMax {
-						newMax = taskEvent.Time
-					}
-
-					payload := &structs.AllocationUpdate{
-						Name:               allocation.Name,
-						AllocationID:       allocation.ID,
-						EvalID:             allocation.EvalID,
-						DesiredStatus:      allocation.DesiredStatus,
-						DesiredDescription: allocation.DesiredDescription,
-						ClientStatus:       allocation.ClientStatus,
-						ClientDescription:  allocation.ClientDescription,
-						JobID:              allocation.JobID,
-						GroupName:          allocation.TaskGroup,
-						TaskName:           taskName,
-						TaskEvent:          taskEvent,
-						TaskState:          taskInfo.State,
-						TaskFailed:         taskInfo.Failed,
-						TaskStartedAt:      taskInfo.StartedAt,
-						TaskFinishedAt:     taskInfo.FinishedAt,
-					}
-
-					f.Publish(payload)
-				}
+		// Iterate clients and find events that have changed since last run
+		for _, client := range clients {
+			if client.ModifyIndex <= f.lastChangeIndex {
+				continue
 			}
+
+			if client.ModifyIndex > newMax {
+				newMax = client.ModifyIndex
+			}
+
+			go func(clientId string) {
+				fullClient, _, err := f.nomadClient.Nodes().Info(clientId, &nomad.QueryOptions{})
+				if err != nil {
+					log.Errorf("Could not read client %s: %s", clientId, err)
+					return
+				}
+
+				f.Publish(fullClient)
+			}(client.ID)
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration
 		q.WaitIndex = meta.LastIndex
-		f.lastChangeTime = newMax
+		f.lastChangeIndex = newMax
 	}
 }
 
 // Close the stopCh if we get a signal, so we can gracefully shut down
-func (f *AllocationFirehose) signalHandler() {
+func (f *Firehose) signalHandler() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 

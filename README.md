@@ -41,12 +41,6 @@ The most basic requirement is `export NOMAD_ADDR=http://<ip>:4646` and `export C
 
 The `nomad-firehose` binary has several helper subcommands.
 
-### `allocations`
-
-`nomad-firehose allocations` will monitor all alocation changes in the Nomad cluster and emit each task state as a new event to either stdout, rabbitmq or kinesis.
-
-The script will use Consul to maintain leader and the last event time processed (saved on quit or every 10s).
-
 The sink type is specified via the `$SINK_TYPE` environment variable. Valid values are: `stdout`, `kinesis` and `amqp`.
 
 The `amqp` sink is configured using `$SINK_AMQP_CONNECTION`, `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY` environment variables.
@@ -54,3 +48,17 @@ The `amqp` sink is configured using `$SINK_AMQP_CONNECTION`, `$SINK_AMQP_EXCHANG
 The `kinesis` sink is configured using `$SINK_KINESIS_STREAM_NAME` and `$SINK_KINESIS_PARTITION_KEY` environment variables.
 
 The `stdout` sink do not have any configuration.
+
+The script will use Consul to maintain leader and the last event time processed (saved on quit or every 10s).
+
+### `allocations`
+
+`nomad-firehose allocations` will monitor all alocation changes in the Nomad cluster and emit each task state as a new firehose event to the configured sink.
+
+### `nodes`
+
+`nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+
+### `evaluations`
+
+`nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit an firehose event per change to the configured sink.
