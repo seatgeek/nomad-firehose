@@ -1,15 +1,12 @@
-package helper
+package sink
 
 import (
 	"fmt"
 	"os"
-
-	"github.com/seatgeek/nomad-firehose/sink"
-	"github.com/seatgeek/nomad-firehose/structs"
 )
 
 // GetSink ...
-func GetSink() (structs.Sink, error) {
+func GetSink() (Sink, error) {
 	sinkType := os.Getenv("SINK_TYPE")
 	if sinkType == "" {
 		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, kinesis or stdout")
@@ -19,11 +16,11 @@ func GetSink() (structs.Sink, error) {
 	case "amqp":
 		fallthrough
 	case "rabbitmq":
-		return sink.NewRabbitmq()
+		return NewRabbitmq()
 	case "kinesis":
-		return sink.NewKinesis()
+		return NewKinesis()
 	case "stdout":
-		return sink.NewStdout()
+		return NewStdout()
 	default:
 		return nil, fmt.Errorf("Invalid SINK_TYPE: amqp, kinesis or stdout")
 	}

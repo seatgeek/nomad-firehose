@@ -11,7 +11,7 @@ import (
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/seatgeek/nomad-firehose/helper"
-	"github.com/seatgeek/nomad-firehose/structs"
+	"github.com/seatgeek/nomad-firehose/sink"
 )
 
 const (
@@ -27,7 +27,7 @@ type Firehose struct {
 	consulLock      *consul.Lock
 	stopCh          chan struct{}
 	lastChangeIndex uint64
-	sink            structs.Sink
+	sink            sink.Sink
 }
 
 // NewFirehose ...
@@ -48,7 +48,7 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	sink, err := helper.GetSink()
+	sink, err := sink.GetSink()
 	if err != nil {
 		return nil, err
 	}

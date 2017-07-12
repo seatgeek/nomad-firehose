@@ -1,4 +1,4 @@
-package structs
+package sink
 
 // Sink ...
 type Sink interface {
