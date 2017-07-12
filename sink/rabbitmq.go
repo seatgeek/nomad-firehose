@@ -1,6 +1,7 @@
 package sink
 
 import (
+	"strconv"
 	"time"
 
 	"os"
@@ -13,11 +14,12 @@ import (
 
 // RabbitmqSink ...
 type RabbitmqSink struct {
-	conn       *amqp.Connection
-	exchange   string
-	routingKey string
-	stopCh     chan interface{}
-	putCh      chan []byte
+	conn        *amqp.Connection
+	exchange    string
+	routingKey  string
+	workerCount int
+	stopCh      chan interface{}
+	putCh       chan []byte
 }
 
 // NewRabbitmq ...
@@ -37,17 +39,27 @@ func NewRabbitmq() (*RabbitmqSink, error) {
 		return nil, fmt.Errorf("[sink/amqp] Mising SINK_AMQP_ROUTING_KEY")
 	}
 
+	workerCountStr := os.Getenv("SINK_AMQP_WORKERS")
+	if workerCountStr == "" {
+		workerCountStr = "1"
+	}
+	workerCount, err := strconv.Atoi(workerCountStr)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid SINK_AMQP_WORKERS value, must be an integer")
+	}
+
 	conn, err := amqp.Dial(connStr)
 	if err != nil {
 		return nil, fmt.Errorf("[sink/amqp] Failed to connect to AMQP: %s", err)
 	}
 
 	return &RabbitmqSink{
-		conn:       conn,
-		exchange:   exchange,
-		routingKey: routingKey,
-		stopCh:     make(chan interface{}),
-		putCh:      make(chan []byte, 1000),
+		conn:        conn,
+		exchange:    exchange,
+		routingKey:  routingKey,
+		workerCount: workerCount,
+		stopCh:      make(chan interface{}),
+		putCh:       make(chan []byte, 1000),
 	}, nil
 }
 
@@ -56,10 +68,9 @@ func (s *RabbitmqSink) Start() error {
 	// Stop chan for all tasks to depend on
 	s.stopCh = make(chan interface{})
 
-	// have 3 writers to rabbitmq
-	go s.write(1)
-	go s.write(2)
-	go s.write(3)
+	for i := 0; i < s.workerCount; i++ {
+		go s.write(i)
+	}
 
 	// wait forever for a stop signal to happen
 	for {
@@ -110,7 +121,7 @@ func (s *RabbitmqSink) write(id int) {
 			err = ch.Publish(
 				s.exchange,   // exchange
 				s.routingKey, // routing key
-				true,         // mandatory
+				false,        // mandatory
 				false,        // immediate
 				amqp.Publishing{
 					ContentType: "application/json",
