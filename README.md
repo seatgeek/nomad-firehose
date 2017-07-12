@@ -53,7 +53,7 @@ The script will use Consul to maintain leader and the last event time processed 
 
 ### `allocations`
 
-`nomad-firehose allocations` will monitor all alocation changes in the Nomad cluster and emit each task state as a new firehose event to the configured sink.
+`nomad-firehose allocations` will monitor all allocation changes in the Nomad cluster and emit each task state as a new firehose event to the configured sink.
 
 The allocation output is different from the [default API response](https://www.nomadproject.io/docs/http/allocs.html), as the tool will emit an event per new [TaskStates](https://www.nomadproject.io/docs/http/allocs.html), rather than all the previous events.
 
