@@ -55,14 +55,65 @@ The script will use Consul to maintain leader and the last event time processed 
 
 `nomad-firehose allocations` will monitor all alocation changes in the Nomad cluster and emit each task state as a new firehose event to the configured sink.
 
+The allocation output is different from the [default API response](https://www.nomadproject.io/docs/http/allocs.html), as the tool will emit an event per new [TaskStates](https://www.nomadproject.io/docs/http/allocs.html), rather than all the previous events.
+
+```json
+{
+    "Name": "job.task[0]",
+    "AllocationID": "1ef2eba2-00e4-3828-96d4-8e58b1447aaf",
+    "DesiredStatus": "run",
+    "DesiredDescription": "",
+    "ClientStatus": "running",
+    "ClientDescription": "",
+    "JobID": "logrotate",
+    "GroupName": "cron",
+    "TaskName": "logrotate",
+    "EvalID": "bf926150-ed30-6c13-c597-34d7a3165fdc",
+    "TaskState": "running",
+    "TaskFailed": false,
+    "TaskStartedAt": "2017-06-30T19:58:28.325895579Z",
+    "TaskFinishedAt": "0001-01-01T00:00:00Z",
+    "TaskEvent": {
+        "Type": "Task Setup",
+        "Time": 1498852707712617200,
+        "FailsTask": false,
+        "RestartReason": "",
+        "SetupError": "",
+        "DriverError": "",
+        "DriverMessage": "",
+        "ExitCode": 0,
+        "Signal": 0,
+        "Message": "Building Task Directory",
+        "KillReason": "",
+        "KillTimeout": 0,
+        "KillError": "",
+        "StartDelay": 0,
+        "DownloadError": "",
+        "ValidationError": "",
+        "DiskLimit": 0,
+        "DiskSize": 0,
+        "FailedSibling": "",
+        "VaultError": "",
+        "TaskSignalReason": "",
+        "TaskSignal": ""
+    }
+}
+```
+
 ### `nodes`
 
 `nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+
+The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/docs/http/node.html)
 
 ### `evaluations`
 
 `nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit an firehose event per change to the configured sink.
 
+The output will be equal to the [Nomad Evaluation API structure](https://www.nomadproject.io/docs/http/eval.html)
+
 ### `jobs`
 
 `nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+
+The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/docs/http/job.html)
