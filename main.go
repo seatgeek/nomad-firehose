@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/seatgeek/nomad-firehose/command/allocations"
 	"github.com/seatgeek/nomad-firehose/command/evaluations"
+	"github.com/seatgeek/nomad-firehose/command/jobs"
 	"github.com/seatgeek/nomad-firehose/command/nodes"
 	cli "gopkg.in/urfave/cli.v1"
 )
@@ -65,6 +66,23 @@ func main() {
 			Usage: "Firehose nomad evaluation changes",
 			Action: func(c *cli.Context) error {
 				firehose, err := evaluations.NewFirehose()
+				if err != nil {
+					return err
+				}
+
+				err = firehose.Start()
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
+			Name:  "jobs",
+			Usage: "Firehose nomad job changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := jobs.NewFirehose()
 				if err != nil {
 					return err
 				}

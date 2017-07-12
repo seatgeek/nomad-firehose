@@ -62,3 +62,7 @@ The script will use Consul to maintain leader and the last event time processed 
 ### `evaluations`
 
 `nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+
+### `jobs`
+
+`nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit an firehose event per change to the configured sink.
