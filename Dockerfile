@@ -7,4 +7,7 @@ RUN apk --update upgrade && \
     rm -rf /var/cache/apk/*
 
 ADD ./build/nomad-firehose-linux-amd64 /nomad-firehose
-ENTRYPOINT ["/nomad-firehose"]
+ADD ./entrypoint.sh /entrypoint.sh
+
+CMD /nomad-firehose
+ENTRYPOINT ["/entrypoint.sh"]
