@@ -2,7 +2,7 @@ package sink
 
 import (
 	"time"
-
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -51,6 +51,6 @@ func (s *StdoutSink) Stop() {
 
 // Put ..
 func (s *StdoutSink) Put(data []byte) error {
-	log.Infof("[sink/stdout] %s", string(data))
+	fmt.Println(string(data))
 	return nil
 }
