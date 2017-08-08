@@ -33,6 +33,7 @@ type Firehose struct {
 // AllocationUpdate ...
 type AllocationUpdate struct {
 	Name               string
+	NodeID             string
 	AllocationID       string
 	DesiredStatus      string
 	DesiredDescription string
@@ -223,6 +224,7 @@ func (f *Firehose) watch() {
 
 					payload := &AllocationUpdate{
 						Name:               allocation.Name,
+						NodeID:             allocation.NodeID,
 						AllocationID:       allocation.ID,
 						EvalID:             allocation.EvalID,
 						DesiredStatus:      allocation.DesiredStatus,
