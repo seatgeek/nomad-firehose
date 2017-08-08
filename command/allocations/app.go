@@ -44,8 +44,8 @@ type AllocationUpdate struct {
 	EvalID             string
 	TaskState          string
 	TaskFailed         bool
-	TaskStartedAt      time.Time
-	TaskFinishedAt     time.Time
+	TaskStartedAt      *time.Time
+	TaskFinishedAt     *time.Time
 	TaskEvent          *nomad.TaskEvent
 }
 
@@ -235,8 +235,8 @@ func (f *Firehose) watch() {
 						TaskEvent:          taskEvent,
 						TaskState:          taskInfo.State,
 						TaskFailed:         taskInfo.Failed,
-						TaskStartedAt:      taskInfo.StartedAt,
-						TaskFinishedAt:     taskInfo.FinishedAt,
+						TaskStartedAt:      &taskInfo.StartedAt,
+						TaskFinishedAt:     &taskInfo.FinishedAt,
 					}
 
 					f.Publish(payload)
