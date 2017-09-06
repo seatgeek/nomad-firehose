@@ -103,6 +103,7 @@ func main() {
 			log.Fatal(err)
 		}
 		log.SetLevel(level)
+		log.SetOutput(os.Stderr)
 
 		return nil
 	}
