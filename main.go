@@ -6,6 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/seatgeek/nomad-firehose/command/allocations"
+	"github.com/seatgeek/nomad-firehose/command/deployments"
 	"github.com/seatgeek/nomad-firehose/command/evaluations"
 	"github.com/seatgeek/nomad-firehose/command/jobs"
 	"github.com/seatgeek/nomad-firehose/command/nodes"
@@ -83,6 +84,23 @@ func main() {
 			Usage: "Firehose nomad job changes",
 			Action: func(c *cli.Context) error {
 				firehose, err := jobs.NewFirehose()
+				if err != nil {
+					return err
+				}
+
+				err = firehose.Start()
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
+			Name:  "deployments",
+			Usage: "Firehose nomad deployment changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := deployments.NewFirehose()
 				if err != nil {
 					return err
 				}
