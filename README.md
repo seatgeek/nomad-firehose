@@ -47,6 +47,19 @@ Saving the last event time mean that restarting the process won't firehose all o
 
 The Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`.
 
+#### Consul ACL Token Permissions
+
+If the Consul cluster being used is running ACLs, the following ACL policy will allow the required access:
+
+```hcl
+key "nomad-firehose" {
+  policy = "write"
+}
+session "" {
+  policy = "write"
+}
+```
+
 ## Usage
 
 The `nomad-firehose` binary has several helper subcommands.
