@@ -9,7 +9,7 @@ import (
 func GetSink() (Sink, error) {
 	sinkType := os.Getenv("SINK_TYPE")
 	if sinkType == "" {
-		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, kafka,kinesis or stdout")
+		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, kafka, kinesis, nsq or stdout")
 	}
 
 	switch sinkType {
@@ -23,7 +23,9 @@ func GetSink() (Sink, error) {
 		return NewKinesis()
 	case "stdout":
 		return NewStdout()
+	case "nsq":
+		return NewNSQ()
 	default:
-		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, kafka, kinesis or stdout",sinkType)
+		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, kafka, kinesis, nsq or stdout", sinkType)
 	}
 }
