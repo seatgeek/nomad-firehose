@@ -70,7 +70,8 @@ func NewFirehose() (*Firehose, error) {
 
 	sink, err := sink.GetSink()
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+		os.Exit(1)
 	}
 
 	return &Firehose{
