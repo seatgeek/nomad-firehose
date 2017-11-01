@@ -349,6 +349,12 @@
 			"revisionTime": "2017-05-08T17:38:06Z"
 		},
 		{
+			"checksumSHA1": "MZdppx6laedD1LcVomiZ/Sfa6rE=",
+			"path": "github.com/nsqio/go-nsq",
+			"revision": "8c1ff52dff6fd3ecc19c418649bc643b18e862fc",
+			"revisionTime": "2017-10-30T00:05:02Z"
+		},
+		{
 			"checksumSHA1": "FGg99nQ56Fo3radSCuU1AeEUJug=",
 			"path": "github.com/pierrec/lz4",
 			"revision": "08c27939df1bd95e881e2c2367a749964ad1fceb",
