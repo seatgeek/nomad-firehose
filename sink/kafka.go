@@ -2,11 +2,12 @@ package sink
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
-	log "github.com/Sirupsen/logrus"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/Shopify/sarama"
+	log "github.com/sirupsen/logrus"
 )
 
 // KafkaSink ...

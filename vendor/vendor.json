@@ -9,12 +9,6 @@
 			"revisionTime": "2017-10-19T17:22:45Z"
 		},
 		{
-			"checksumSHA1": "VYvyVPooYXiO6gqwCGkPPK5vCzk=",
-			"path": "github.com/Sirupsen/logrus",
-			"revision": "3d4380f53a34dcdc95f0c1db702615992b38d9a4",
-			"revisionTime": "2017-06-20T14:45:10Z"
-		},
-		{
 			"checksumSHA1": "M+ZeYktTT2wak9ZvQ0OZBbIHAGo=",
 			"path": "github.com/armon/go-metrics",
 			"revision": "f036747b9d0e8590f175a5d654a2194a7d9df4b5",
@@ -373,6 +367,18 @@
 			"revisionTime": "2016-11-28T21:05:44Z"
 		},
 		{
+			"checksumSHA1": "a5wZKPLYhoJSeKm/I0ZES5arBoE=",
+			"path": "github.com/seatgeek/logrus-gelf-formatter",
+			"revision": "76d7e00325a152cdb8bc3b0c829c1d14ce2af8e8",
+			"revisionTime": "2017-07-21T13:57:13Z"
+		},
+		{
+			"checksumSHA1": "ySaT8G3I3y4MmnoXOYAAX0rC+p8=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "d682213848ed68c0a260ca37d6dd5ace8423f5ba",
+			"revisionTime": "2017-12-05T20:32:29Z"
+		},
+		{
 			"checksumSHA1": "3XsmaR3i5euGHpt150DerScyOco=",
 			"path": "github.com/streadway/amqp",
 			"revision": "2cbfe40c9341ad63ba23e53013b3ddc7989d801c",
@@ -385,10 +391,22 @@
 			"revisionTime": "2017-06-20T10:48:52Z"
 		},
 		{
-			"checksumSHA1": "2L67OZQlNdATOW57chc6+Hc8SO0=",
+			"checksumSHA1": "X1NTlfcau2XcV6WtAHF6b/DECOA=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "39efaea5da11abd5e2b90a435b1f338cdb94619c",
+			"revisionTime": "2018-01-10T16:35:17Z"
+		},
+		{
+			"checksumSHA1": "pMtZBKBzTz+Y9N0dN1JQi5sOldM=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "c23410a886927bab8ca5e80b08af6a56faeb330d",
 			"revisionTime": "2017-06-23T11:49:42Z"
+		},
+		{
+			"checksumSHA1": "eQq+ZoTWPjyizS9XalhZwfGjQao=",
+			"path": "golang.org/x/sys/windows",
+			"revision": "af50095a40f9041b3b38960738837185c26e9419",
+			"revisionTime": "2018-01-19T16:06:40Z"
 		},
 		{
 			"checksumSHA1": "brhONOPp4CSdTZf5uEtcH+FpFUI=",

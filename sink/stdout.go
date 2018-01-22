@@ -1,9 +1,10 @@
 package sink
 
 import (
-	"time"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // StdoutSink ...

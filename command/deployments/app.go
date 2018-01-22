@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/seatgeek/nomad-firehose/helper"
 	"github.com/seatgeek/nomad-firehose/sink"
+	log "github.com/sirupsen/logrus"
 )
 
 const (

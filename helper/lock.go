@@ -1,8 +1,8 @@
 package helper
 
 import (
-	log "github.com/Sirupsen/logrus"
 	consul "github.com/hashicorp/consul/api"
+	log "github.com/sirupsen/logrus"
 )
 
 // Wait for lock to the Consul KV key.

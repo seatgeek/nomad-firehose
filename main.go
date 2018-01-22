@@ -4,12 +4,13 @@ import (
 	"os"
 	"sort"
 
-	log "github.com/Sirupsen/logrus"
+	gelf "github.com/seatgeek/logrus-gelf-formatter"
 	"github.com/seatgeek/nomad-firehose/command/allocations"
 	"github.com/seatgeek/nomad-firehose/command/deployments"
 	"github.com/seatgeek/nomad-firehose/command/evaluations"
 	"github.com/seatgeek/nomad-firehose/command/jobs"
 	"github.com/seatgeek/nomad-firehose/command/nodes"
+	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 )
 
@@ -131,6 +132,10 @@ func main() {
 
 		if c.String("log-format") == "json" {
 			log.SetFormatter(&log.JSONFormatter{})
+		}
+
+		if c.String("log-format") == "gelf" {
+			log.SetFormatter(&gelf.GelfFormatter{})
 		}
 
 		return nil

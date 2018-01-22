@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/nsqio/go-nsq"
+	log "github.com/sirupsen/logrus"
 )
 
 type NSQSink struct {
