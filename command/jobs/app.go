@@ -50,7 +50,8 @@ func NewFirehose() (*Firehose, error) {
 
 	sink, err := sink.GetSink()
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+		os.Exit(1)
 	}
 
 	return &Firehose{
@@ -174,7 +175,7 @@ func (f *Firehose) watch() {
 	for {
 		jobs, meta, err := f.nomadClient.Jobs().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch clients: %s", err)
+			log.Errorf("Unable to fetch jobs: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -203,7 +204,7 @@ func (f *Firehose) watch() {
 			go func(jobID string) {
 				fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
 				if err != nil {
-					log.Errorf("Could not read client %s: %s", jobID, err)
+					log.Errorf("Could not read job %s: %s", jobID, err)
 					return
 				}
 

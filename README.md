@@ -47,6 +47,19 @@ Saving the last event time mean that restarting the process won't firehose all o
 
 The Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`.
 
+#### Consul ACL Token Permissions
+
+If the Consul cluster being used is running ACLs, the following ACL policy will allow the required access:
+
+```hcl
+key "nomad-firehose" {
+  policy = "write"
+}
+session "" {
+  policy = "write"
+}
+```
+
 ## Usage
 
 The `nomad-firehose` binary has several helper subcommands.
@@ -63,7 +76,7 @@ The `stdout` sink do not have any configuration, it will simply output the JSON 
 
 `nomad-firehose allocations` will monitor all allocation changes in the Nomad cluster and emit each task state as a new firehose event to the configured sink.
 
-The allocation output is different from the [default API response](https://www.nomadproject.io/docs/http/allocs.html), as the tool will emit an event per new [TaskStates](https://www.nomadproject.io/docs/http/allocs.html), rather than all the previous events.
+The allocation output is different from the [default API response](https://www.nomadproject.io/api/allocations.html), as the tool will emit an event per new [TaskStates](https://www.nomadproject.io/docs/http/allocs.html), rather than all the previous events.
 
 ```json
 {
@@ -112,16 +125,22 @@ The allocation output is different from the [default API response](https://www.n
 
 `nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit an firehose event per change to the configured sink.
 
-The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/docs/http/node.html)
+The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/api/nodes.html)
 
 ### `evaluations`
 
 `nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit an firehose event per change to the configured sink.
 
-The output will be equal to the [Nomad Evaluation API structure](https://www.nomadproject.io/docs/http/eval.html)
+The output will be equal to the [Nomad Evaluation API structure](https://www.nomadproject.io/api/evaluations.html)
 
 ### `jobs`
 
 `nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit an firehose event per change to the configured sink.
 
-The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/docs/http/job.html)
+The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/api/jobs.html)
+
+### `deployments`
+
+`nomad-firehose deployments` will monitor all deployment changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+
+The output will be equal to the *full* [Nomad Deployment API structure](https://www.nomadproject.io/api/deployments.html)

@@ -6,6 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/seatgeek/nomad-firehose/command/allocations"
+	"github.com/seatgeek/nomad-firehose/command/deployments"
 	"github.com/seatgeek/nomad-firehose/command/evaluations"
 	"github.com/seatgeek/nomad-firehose/command/jobs"
 	"github.com/seatgeek/nomad-firehose/command/nodes"
@@ -101,6 +102,23 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:  "deployments",
+			Usage: "Firehose nomad deployment changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := deployments.NewFirehose()
+				if err != nil {
+					return err
+				}
+
+				err = firehose.Start()
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
 	}
 	app.Before = func(c *cli.Context) error {
 		// convert the human passed log level into logrus levels
@@ -109,6 +127,7 @@ func main() {
 			log.Fatal(err)
 		}
 		log.SetLevel(level)
+		log.SetOutput(os.Stderr)
 
 		if c.String("log-format") == "json" {
 			log.SetFormatter(&log.JSONFormatter{})
