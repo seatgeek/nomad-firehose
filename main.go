@@ -25,6 +25,12 @@ func main() {
 			Usage:  "Debug level (debug, info, warn/warning, error, fatal, panic)",
 			EnvVar: "LOG_LEVEL",
 		},
+		cli.StringFlag{
+			Name:   "log-format",
+			Value:  "text",
+			Usage:  "json or text",
+			EnvVar: "LOG_FORMAT",
+		},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -103,6 +109,10 @@ func main() {
 			log.Fatal(err)
 		}
 		log.SetLevel(level)
+
+		if c.String("log-format") == "json" {
+			log.SetFormatter(&log.JSONFormatter{})
+		}
 
 		return nil
 	}
