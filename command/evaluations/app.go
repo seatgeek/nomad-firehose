@@ -174,6 +174,8 @@ func (f *Firehose) watch() {
 	}
 
 	for {
+		log.Infof("Fetching evaluations from Nomad: %+v", q)
+
 		evaluations, meta, err := f.nomadClient.Evaluations().List(q)
 		if err != nil {
 			log.Errorf("Unable to fetch evaluations: %s", err)
