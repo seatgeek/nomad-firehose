@@ -199,7 +199,10 @@ func (f *Firehose) watch() {
 			}
 
 			f.Publish(evaluation)
+			evaluation = nil
 		}
+
+		evaluations = nil
 
 		// Update WaitIndex and Last Change Time for next iteration
 		f.lastChangeIndex = meta.LastIndex
