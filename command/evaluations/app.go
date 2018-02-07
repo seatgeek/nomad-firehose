@@ -170,6 +170,7 @@ func (f *Firehose) Publish(update *nomad.Evaluation) {
 func (f *Firehose) watch() {
 	q := &nomad.QueryOptions{
 		WaitIndex:  f.lastChangeIndex,
+		WaitTime:   5 * time.Minute,
 		AllowStale: true,
 	}
 

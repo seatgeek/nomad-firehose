@@ -168,7 +168,11 @@ func (f *Firehose) Publish(update *nomad.Job) {
 
 // Continously watch for changes to the allocation list and publish it as updates
 func (f *Firehose) watch() {
-	q := &nomad.QueryOptions{WaitIndex: f.lastChangeIndex, AllowStale: true}
+	q := &nomad.QueryOptions{
+		WaitIndex:  f.lastChangeIndex,
+		WaitTime:   5 * time.Minute,
+		AllowStale: true,
+	}
 
 	newMax := f.lastChangeIndex
 
