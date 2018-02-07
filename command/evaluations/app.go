@@ -168,28 +168,26 @@ func (f *Firehose) Publish(update *nomad.Evaluation) {
 
 // Continously watch for changes to the allocation list and publish it as updates
 func (f *Firehose) watch() {
-	q := &nomad.QueryOptions{WaitIndex: 1, AllowStale: true}
-
-	newMax := f.lastChangeIndex
+	q := &nomad.QueryOptions{
+		WaitIndex:  f.lastChangeIndex,
+		AllowStale: true,
+	}
 
 	for {
 		evaluations, meta, err := f.nomadClient.Evaluations().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch clients: %s", err)
+			log.Errorf("Unable to fetch evaluations: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
 
-		remoteWaitIndex := meta.LastIndex
-		localWaitIndex := q.WaitIndex
-
 		// Only work if the WaitIndex have changed
-		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Evaluations index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+		if meta.LastIndex <= f.lastChangeIndex {
+			log.Infof("Evaluations index is unchanged (%d <= %d)", meta.LastIndex, f.lastChangeIndex)
 			continue
 		}
 
-		log.Debugf("Evaluations index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
+		log.Infof("Evaluations index is changed (%d <> %d)", meta.LastIndex, f.lastChangeIndex)
 
 		// Iterate clients and find events that have changed since last run
 		for _, evaluation := range evaluations {
@@ -197,16 +195,12 @@ func (f *Firehose) watch() {
 				continue
 			}
 
-			if evaluation.ModifyIndex > newMax {
-				newMax = evaluation.ModifyIndex
-			}
-
 			f.Publish(evaluation)
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration
+		f.lastChangeIndex = meta.LastIndex
 		q.WaitIndex = meta.LastIndex
-		f.lastChangeIndex = newMax
 	}
 }
 
