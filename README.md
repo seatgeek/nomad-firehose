@@ -74,7 +74,7 @@ The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest
 
 The `kinesis` sink is configured using `$SINK_KINESIS_STREAM_NAME` and `$SINK_KINESIS_PARTITION_KEY` environment variables.
 
-The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_ADDR` environment variables.
+The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_TOPIC_NAME` environment variables.
 
 The `stdout` sink do not have any configuration, it will simply output the JSON to stdout for debugging.
 
