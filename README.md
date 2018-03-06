@@ -68,6 +68,7 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `amqp`
 - `kinesis`
 - `nsq`
+- `redis`
 - `stdout`
 
 The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY`, `$SINK_AMQP_WORKERS` (default: `1`) environment variables.
@@ -75,6 +76,8 @@ The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest
 The `kinesis` sink is configured using `$SINK_KINESIS_STREAM_NAME` and `$SINK_KINESIS_PARTITION_KEY` environment variables.
 
 The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_TOPIC_NAME` environment variables.
+
+The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[password]@127.0.0.1[:5672]/0`) and `$SINK_REDIS_KEY` environment variables.
 
 The `stdout` sink do not have any configuration, it will simply output the JSON to stdout for debugging.
 
