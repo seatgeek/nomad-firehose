@@ -4,7 +4,7 @@
 - name: Push To ECR
   service: nomad-firehose
   type: push
-  image_tag: $CI_BRANCH
+  image_tag: "{{.CommitID}}"
   image_name: 907136348507.dkr.ecr.us-east-1.amazonaws.com/nomad-firehose
   registry: https://907136348507.dkr.ecr.us-east-1.amazonaws.com
   dockercfg_service: dockercfg_generator
