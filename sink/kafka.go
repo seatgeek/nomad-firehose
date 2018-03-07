@@ -25,7 +25,6 @@ type KafkaSink struct {
 
 // NewKafka ...
 func NewKafka() (*KafkaSink, error) {
-
 	brokers := os.Getenv("SINK_KAFKA_BROKERS")
 	if brokers == "" {
 		return nil, fmt.Errorf("[sink/kafka] Missing SINK_KAFKA_BROKERS")

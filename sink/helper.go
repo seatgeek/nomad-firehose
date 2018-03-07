@@ -14,15 +14,15 @@ func GetSink() (Sink, error) {
 
 	switch sinkType {
 	case "amqp":
-		fallthrough
+		return NewRabbitmq()
+	case "rabbitmq":
+		return NewRabbitmq()
 	case "kafka":
 		return NewKafka()
 	case "kinesis":
 		return NewKinesis()
 	case "nsq":
 		return NewNSQ()
-	case "rabbitmq":
-		return NewRabbitmq()
 	case "redis":
 		return NewRedis()
 	case "stdout":
