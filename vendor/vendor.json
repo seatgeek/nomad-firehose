@@ -201,6 +201,18 @@
 			"revisionTime": "2016-08-05T00:47:13Z"
 		},
 		{
+			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
+			"path": "github.com/garyburd/redigo/internal",
+			"revision": "d1ed5c67e5794de818ea85e6b522fda02623a484",
+			"revisionTime": "2017-12-29T01:14:44Z"
+		},
+		{
+			"checksumSHA1": "sc/XC7agvewnB1AGXMGZRkVzM8c=",
+			"path": "github.com/garyburd/redigo/redis",
+			"revision": "d1ed5c67e5794de818ea85e6b522fda02623a484",
+			"revisionTime": "2017-12-29T01:14:44Z"
+		},
+		{
 			"checksumSHA1": "Ecn0UexWoWRG6Di0wdWvIfms/jc=",
 			"path": "github.com/go-ini/ini",
 			"revision": "3d73f4b845efdf9989fffd4b4e562727744a34ba",
