@@ -1,4 +1,4 @@
-package jobs
+package nodes
 
 import (
 	"encoding/json"
@@ -7,16 +7,17 @@ import (
 	"strconv"
 	"time"
 
+	"app/helper"
+	"app/sink"
+
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/helper"
-	"github.com/seatgeek/nomad-firehose/sink"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	consulLockKey   = "nomad-firehose/jobs.lock"
-	consulLockValue = "nomad-firehose/jobs.value"
+	consulLockKey   = "nomad-firehose/clients.lock"
+	consulLockValue = "nomad-firehose/clients.value"
 )
 
 // Firehose ...
@@ -157,7 +158,7 @@ func (f *Firehose) writeLastChangeTime() {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(update *nomad.Job) {
+func (f *Firehose) Publish(update *nomad.Node) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -177,9 +178,9 @@ func (f *Firehose) watch() {
 	newMax := f.lastChangeIndex
 
 	for {
-		jobs, meta, err := f.nomadClient.Jobs().List(q)
+		clients, meta, err := f.nomadClient.Nodes().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch jobs: %s", err)
+			log.Errorf("Unable to fetch clients: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -189,31 +190,31 @@ func (f *Firehose) watch() {
 
 		// Only work if the WaitIndex have changed
 		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Jobs index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+			log.Debugf("Clients index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
 			continue
 		}
 
-		log.Debugf("Jobs index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
+		log.Debugf("Clients index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
 
-		// Iterate jobs and find events that have changed since last run
-		for _, job := range jobs {
-			if job.ModifyIndex <= f.lastChangeIndex {
+		// Iterate clients and find events that have changed since last run
+		for _, client := range clients {
+			if client.ModifyIndex <= f.lastChangeIndex {
 				continue
 			}
 
-			if job.ModifyIndex > newMax {
-				newMax = job.ModifyIndex
+			if client.ModifyIndex > newMax {
+				newMax = client.ModifyIndex
 			}
 
-			go func(jobID string) {
-				fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
+			go func(clientId string) {
+				fullClient, _, err := f.nomadClient.Nodes().Info(clientId, &nomad.QueryOptions{})
 				if err != nil {
-					log.Errorf("Could not read job %s: %s", jobID, err)
+					log.Errorf("Could not read client %s: %s", clientId, err)
 					return
 				}
 
-				f.Publish(fullJob)
-			}(job.ID)
+				f.Publish(fullClient)
+			}(client.ID)
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration

@@ -1,4 +1,4 @@
-package deployments
+package evaluations
 
 import (
 	"encoding/json"
@@ -7,16 +7,17 @@ import (
 	"strconv"
 	"time"
 
+	"app/helper"
+	"app/sink"
+
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/helper"
-	"github.com/seatgeek/nomad-firehose/sink"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	consulLockKey   = "nomad-firehose/deployments.lock"
-	consulLockValue = "nomad-firehose/deployments.value"
+	consulLockKey   = "nomad-firehose/evaluations.lock"
+	consulLockValue = "nomad-firehose/evaluations.value"
 )
 
 // Firehose ...
@@ -79,7 +80,7 @@ func (f *Firehose) Start() error {
 	// setup signal handler for graceful shutdown
 	go f.signalHandler()
 
-	// watch for deployment changes
+	// watch for allocation changes
 	go f.watch()
 
 	// Save the last event time every 10s
@@ -157,7 +158,7 @@ func (f *Firehose) writeLastChangeTime() {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(update *nomad.Deployment) {
+func (f *Firehose) Publish(update *nomad.Evaluation) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -166,7 +167,7 @@ func (f *Firehose) Publish(update *nomad.Deployment) {
 	f.sink.Put(b)
 }
 
-// Continously watch for changes to the deployment list and publish it as updates
+// Continously watch for changes to the allocation list and publish it as updates
 func (f *Firehose) watch() {
 	q := &nomad.QueryOptions{
 		WaitIndex:  f.lastChangeIndex,
@@ -174,51 +175,39 @@ func (f *Firehose) watch() {
 		AllowStale: true,
 	}
 
-	newMax := f.lastChangeIndex
-
 	for {
-		deployments, meta, err := f.nomadClient.Deployments().List(q)
+		log.Infof("Fetching evaluations from Nomad: %+v", q)
+
+		evaluations, meta, err := f.nomadClient.Evaluations().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch deployments: %s", err)
+			log.Errorf("Unable to fetch evaluations: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
 
-		remoteWaitIndex := meta.LastIndex
-		localWaitIndex := q.WaitIndex
-
 		// Only work if the WaitIndex have changed
-		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Deployments index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+		if meta.LastIndex <= f.lastChangeIndex {
+			log.Infof("Evaluations index is unchanged (%d <= %d)", meta.LastIndex, f.lastChangeIndex)
 			continue
 		}
 
-		log.Debugf("Deployments index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
+		log.Infof("Evaluations index is changed (%d <> %d)", meta.LastIndex, f.lastChangeIndex)
 
-		// Iterate deployments and find events that have changed since last run
-		for _, deployment := range deployments {
-			if deployment.ModifyIndex <= f.lastChangeIndex {
+		// Iterate clients and find events that have changed since last run
+		for _, evaluation := range evaluations {
+			if evaluation.ModifyIndex <= f.lastChangeIndex {
 				continue
 			}
 
-			if deployment.ModifyIndex > newMax {
-				newMax = deployment.ModifyIndex
-			}
-
-			go func(DeploymentID string) {
-				fullDeployment, _, err := f.nomadClient.Deployments().Info(DeploymentID, &nomad.QueryOptions{})
-				if err != nil {
-					log.Errorf("Could not read deployment %s: %s", DeploymentID, err)
-					return
-				}
-
-				f.Publish(fullDeployment)
-			}(deployment.ID)
+			f.Publish(evaluation)
+			evaluation = nil
 		}
 
+		evaluations = nil
+
 		// Update WaitIndex and Last Change Time for next iteration
+		f.lastChangeIndex = meta.LastIndex
 		q.WaitIndex = meta.LastIndex
-		f.lastChangeIndex = newMax
 	}
 }
 

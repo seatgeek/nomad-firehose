@@ -1,4 +1,4 @@
-package evaluations
+package allocations
 
 import (
 	"encoding/json"
@@ -7,16 +7,17 @@ import (
 	"strconv"
 	"time"
 
+	"app/helper"
+	"app/sink"
+
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/helper"
-	"github.com/seatgeek/nomad-firehose/sink"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	consulLockKey   = "nomad-firehose/evaluations.lock"
-	consulLockValue = "nomad-firehose/evaluations.value"
+	consulLockKey   = "nomad-firehose/allocations.lock"
+	consulLockValue = "nomad-firehose/allocations.value"
 )
 
 // Firehose ...
@@ -26,8 +27,28 @@ type Firehose struct {
 	consulSessionID string
 	consulLock      *consul.Lock
 	stopCh          chan struct{}
-	lastChangeIndex uint64
+	lastChangeTime  int64
 	sink            sink.Sink
+}
+
+// AllocationUpdate ...
+type AllocationUpdate struct {
+	Name               string
+	NodeID             string
+	AllocationID       string
+	DesiredStatus      string
+	DesiredDescription string
+	ClientStatus       string
+	ClientDescription  string
+	JobID              string
+	GroupName          string
+	TaskName           string
+	EvalID             string
+	TaskState          string
+	TaskFailed         bool
+	TaskStartedAt      *time.Time
+	TaskFinishedAt     *time.Time
+	TaskEvent          *nomad.TaskEvent
 }
 
 // NewFirehose ...
@@ -116,7 +137,7 @@ func (f *Firehose) restoreLastChangeTime() error {
 			return err
 		}
 
-		f.lastChangeIndex = uint64(v)
+		f.lastChangeTime = v
 		log.Infof("Restoring Last Change Time to %s", sv)
 	} else {
 		log.Info("No Last Change Time restore point, starting from scratch")
@@ -142,7 +163,7 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 }
 
 func (f *Firehose) writeLastChangeTime() {
-	v := strconv.FormatUint(f.lastChangeIndex, 10)
+	v := strconv.FormatInt(f.lastChangeTime, 10)
 
 	log.Infof("Writing lastChangedTime to KV: %s", v)
 	kv := &consul.KVPair{
@@ -157,7 +178,7 @@ func (f *Firehose) writeLastChangeTime() {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(update *nomad.Evaluation) {
+func (f *Firehose) Publish(update *AllocationUpdate) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -169,44 +190,71 @@ func (f *Firehose) Publish(update *nomad.Evaluation) {
 // Continously watch for changes to the allocation list and publish it as updates
 func (f *Firehose) watch() {
 	q := &nomad.QueryOptions{
-		WaitIndex:  f.lastChangeIndex,
+		WaitIndex:  1,
 		WaitTime:   5 * time.Minute,
 		AllowStale: true,
 	}
 
-	for {
-		log.Infof("Fetching evaluations from Nomad: %+v", q)
+	newMax := f.lastChangeTime
 
-		evaluations, meta, err := f.nomadClient.Evaluations().List(q)
+	for {
+		allocations, meta, err := f.nomadClient.Allocations().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch evaluations: %s", err)
+			log.Errorf("Unable to fetch allocations: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
 
+		remoteWaitIndex := meta.LastIndex
+		localWaitIndex := q.WaitIndex
+
 		// Only work if the WaitIndex have changed
-		if meta.LastIndex <= f.lastChangeIndex {
-			log.Infof("Evaluations index is unchanged (%d <= %d)", meta.LastIndex, f.lastChangeIndex)
+		if remoteWaitIndex <= localWaitIndex {
+			log.Debugf("Allocations index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
 			continue
 		}
 
-		log.Infof("Evaluations index is changed (%d <> %d)", meta.LastIndex, f.lastChangeIndex)
+		log.Debugf("Allocations index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
 
-		// Iterate clients and find events that have changed since last run
-		for _, evaluation := range evaluations {
-			if evaluation.ModifyIndex <= f.lastChangeIndex {
-				continue
+		// Iterate allocations and find events that have changed since last run
+		for _, allocation := range allocations {
+			for taskName, taskInfo := range allocation.TaskStates {
+				for _, taskEvent := range taskInfo.Events {
+					if taskEvent.Time <= f.lastChangeTime {
+						continue
+					}
+
+					if taskEvent.Time > newMax {
+						newMax = taskEvent.Time
+					}
+
+					payload := &AllocationUpdate{
+						Name:               allocation.Name,
+						NodeID:             allocation.NodeID,
+						AllocationID:       allocation.ID,
+						EvalID:             allocation.EvalID,
+						DesiredStatus:      allocation.DesiredStatus,
+						DesiredDescription: allocation.DesiredDescription,
+						ClientStatus:       allocation.ClientStatus,
+						ClientDescription:  allocation.ClientDescription,
+						JobID:              allocation.JobID,
+						GroupName:          allocation.TaskGroup,
+						TaskName:           taskName,
+						TaskEvent:          taskEvent,
+						TaskState:          taskInfo.State,
+						TaskFailed:         taskInfo.Failed,
+						TaskStartedAt:      &taskInfo.StartedAt,
+						TaskFinishedAt:     &taskInfo.FinishedAt,
+					}
+
+					f.Publish(payload)
+				}
 			}
-
-			f.Publish(evaluation)
-			evaluation = nil
 		}
 
-		evaluations = nil
-
 		// Update WaitIndex and Last Change Time for next iteration
-		f.lastChangeIndex = meta.LastIndex
 		q.WaitIndex = meta.LastIndex
+		f.lastChangeTime = newMax
 	}
 }
 

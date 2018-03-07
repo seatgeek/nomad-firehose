@@ -1,0 +1,10 @@
+nomad-firehose:
+  build:
+    image: 907136348507.dkr.ecr.us-east-1.amazonaws.com/nomad-firehose
+    dockerfile: Dockerfile
+  cache: true
+
+dockercfg_generator:
+  image: codeship/aws-ecr-dockercfg-generator
+  add_docker: true
+  encrypted_env_file: build-dev.env.encrypted

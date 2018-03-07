@@ -4,12 +4,13 @@ import (
 	"os"
 	"sort"
 
+	"app/command/allocations"
+	"app/command/deployments"
+	"app/command/evaluations"
+	"app/command/jobs"
+	"app/command/nodes"
+
 	gelf "github.com/seatgeek/logrus-gelf-formatter"
-	"github.com/seatgeek/nomad-firehose/command/allocations"
-	"github.com/seatgeek/nomad-firehose/command/deployments"
-	"github.com/seatgeek/nomad-firehose/command/evaluations"
-	"github.com/seatgeek/nomad-firehose/command/jobs"
-	"github.com/seatgeek/nomad-firehose/command/nodes"
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 )

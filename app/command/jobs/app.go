@@ -1,4 +1,4 @@
-package allocations
+package jobs
 
 import (
 	"encoding/json"
@@ -7,16 +7,17 @@ import (
 	"strconv"
 	"time"
 
+	"app/helper"
+	"app/sink"
+
 	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/helper"
-	"github.com/seatgeek/nomad-firehose/sink"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	consulLockKey   = "nomad-firehose/allocations.lock"
-	consulLockValue = "nomad-firehose/allocations.value"
+	consulLockKey   = "nomad-firehose/jobs.lock"
+	consulLockValue = "nomad-firehose/jobs.value"
 )
 
 // Firehose ...
@@ -26,28 +27,8 @@ type Firehose struct {
 	consulSessionID string
 	consulLock      *consul.Lock
 	stopCh          chan struct{}
-	lastChangeTime  int64
+	lastChangeIndex uint64
 	sink            sink.Sink
-}
-
-// AllocationUpdate ...
-type AllocationUpdate struct {
-	Name               string
-	NodeID             string
-	AllocationID       string
-	DesiredStatus      string
-	DesiredDescription string
-	ClientStatus       string
-	ClientDescription  string
-	JobID              string
-	GroupName          string
-	TaskName           string
-	EvalID             string
-	TaskState          string
-	TaskFailed         bool
-	TaskStartedAt      *time.Time
-	TaskFinishedAt     *time.Time
-	TaskEvent          *nomad.TaskEvent
 }
 
 // NewFirehose ...
@@ -136,7 +117,7 @@ func (f *Firehose) restoreLastChangeTime() error {
 			return err
 		}
 
-		f.lastChangeTime = v
+		f.lastChangeIndex = uint64(v)
 		log.Infof("Restoring Last Change Time to %s", sv)
 	} else {
 		log.Info("No Last Change Time restore point, starting from scratch")
@@ -162,7 +143,7 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 }
 
 func (f *Firehose) writeLastChangeTime() {
-	v := strconv.FormatInt(f.lastChangeTime, 10)
+	v := strconv.FormatUint(f.lastChangeIndex, 10)
 
 	log.Infof("Writing lastChangedTime to KV: %s", v)
 	kv := &consul.KVPair{
@@ -177,7 +158,7 @@ func (f *Firehose) writeLastChangeTime() {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(update *AllocationUpdate) {
+func (f *Firehose) Publish(update *nomad.Job) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -189,17 +170,17 @@ func (f *Firehose) Publish(update *AllocationUpdate) {
 // Continously watch for changes to the allocation list and publish it as updates
 func (f *Firehose) watch() {
 	q := &nomad.QueryOptions{
-		WaitIndex:  1,
+		WaitIndex:  f.lastChangeIndex,
 		WaitTime:   5 * time.Minute,
 		AllowStale: true,
 	}
 
-	newMax := f.lastChangeTime
+	newMax := f.lastChangeIndex
 
 	for {
-		allocations, meta, err := f.nomadClient.Allocations().List(q)
+		jobs, meta, err := f.nomadClient.Jobs().List(q)
 		if err != nil {
-			log.Errorf("Unable to fetch allocations: %s", err)
+			log.Errorf("Unable to fetch jobs: %s", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -209,51 +190,36 @@ func (f *Firehose) watch() {
 
 		// Only work if the WaitIndex have changed
 		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Allocations index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+			log.Debugf("Jobs index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
 			continue
 		}
 
-		log.Debugf("Allocations index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
+		log.Debugf("Jobs index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
 
-		// Iterate allocations and find events that have changed since last run
-		for _, allocation := range allocations {
-			for taskName, taskInfo := range allocation.TaskStates {
-				for _, taskEvent := range taskInfo.Events {
-					if taskEvent.Time <= f.lastChangeTime {
-						continue
-					}
-
-					if taskEvent.Time > newMax {
-						newMax = taskEvent.Time
-					}
-
-					payload := &AllocationUpdate{
-						Name:               allocation.Name,
-						NodeID:             allocation.NodeID,
-						AllocationID:       allocation.ID,
-						EvalID:             allocation.EvalID,
-						DesiredStatus:      allocation.DesiredStatus,
-						DesiredDescription: allocation.DesiredDescription,
-						ClientStatus:       allocation.ClientStatus,
-						ClientDescription:  allocation.ClientDescription,
-						JobID:              allocation.JobID,
-						GroupName:          allocation.TaskGroup,
-						TaskName:           taskName,
-						TaskEvent:          taskEvent,
-						TaskState:          taskInfo.State,
-						TaskFailed:         taskInfo.Failed,
-						TaskStartedAt:      &taskInfo.StartedAt,
-						TaskFinishedAt:     &taskInfo.FinishedAt,
-					}
-
-					f.Publish(payload)
-				}
+		// Iterate jobs and find events that have changed since last run
+		for _, job := range jobs {
+			if job.ModifyIndex <= f.lastChangeIndex {
+				continue
 			}
+
+			if job.ModifyIndex > newMax {
+				newMax = job.ModifyIndex
+			}
+
+			go func(jobID string) {
+				fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
+				if err != nil {
+					log.Errorf("Could not read job %s: %s", jobID, err)
+					return
+				}
+
+				f.Publish(fullJob)
+			}(job.ID)
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration
 		q.WaitIndex = meta.LastIndex
-		f.lastChangeTime = newMax
+		f.lastChangeIndex = newMax
 	}
 }
 
