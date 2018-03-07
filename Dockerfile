@@ -11,7 +11,6 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 
 RUN go get github.com/kardianos/govendor
-RUN govendor fetch github.com/hashicorp/nomad/api@v0.7.1
 RUN govendor sync
 RUN go build -a -o nomad-firehose
 
