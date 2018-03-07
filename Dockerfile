@@ -10,10 +10,10 @@ ENV GOBUILD=$GOBUILD
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 
-RUN go get github.com/kardianos/govendor \
-	&& govendor fetch github.com/hashicorp/nomad/api@v0.7.1 \
-	&& govendor sync \
-	&& go build -a -o nomad-firehose
+RUN go get github.com/kardianos/govendor
+RUN govendor fetch github.com/hashicorp/nomad/api@v0.7.1
+RUN govendor sync
+RUN go build -a -o nomad-firehose
 
 RUN govendor list
 
