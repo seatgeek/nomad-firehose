@@ -1,8 +1,8 @@
 # build config
-BUILD_DIR 		?= $(abspath build)
+BUILD_DIR 		?= build
 GET_GOARCH 		 = $(word 2,$(subst -, ,$1))
 GET_GOOS   		 = $(word 1,$(subst -, ,$1))
-GOBUILD   		?= $(shell go env GOOS)-$(shell go env GOARCH)
+GOBUILD   		?= linux-amd64
 GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 VETARGS? 		 =-all
 
@@ -43,17 +43,19 @@ vet: fmt
 BINARIES = $(addprefix $(BUILD_DIR)/nomad-firehose-, $(GOBUILD))
 $(BINARIES): $(BUILD_DIR)/nomad-firehose-%: $(BUILD_DIR)
 	@echo "=> building $@ ..."
-	GOOS=$(call GET_GOOS,$*) GOARCH=$(call GET_GOARCH,$*) CGO_ENABLED=0 govendor build -o $@
+	#GOOS=$(call GET_GOOS,$*) GOARCH=$(call GET_GOARCH,$*) CGO_ENABLED=0 govendor build -o $@
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 govendor build -o $@
+
 
 .PHONY: dist
-dist: install fmt vet
+dist:
 	@echo "=> building ..."
 	$(MAKE) -j $(BINARIES)
 
 .PHONY: docker
 docker:
 	@echo "=> build and push Docker image ..."
-	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
-	docker build -f Dockerfile -t seatgeek/nomad-firehose:$(COMMIT) .
-	docker tag seatgeek/nomad-firehose:$(COMMIT) seatgeek/nomad-firehose:$(TAG)
-	docker push seatgeek/nomad-firehose:$(TAG)
+	#@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
+	docker build -f Dockerfile -t seatgeek/nomad-firehose .
+	#docker tag seatgeek/nomad-firehose:$(COMMIT) seatgeek/nomad-firehose:$(TAG)
+	#docker push seatgeek/nomad-firehose:$(TAG)
