@@ -5,11 +5,11 @@ import (
 	"sort"
 
 	gelf "github.com/seatgeek/logrus-gelf-formatter"
-	"github.com/seatgeek/nomad-firehose/command/allocations"
-	"github.com/seatgeek/nomad-firehose/command/deployments"
-	"github.com/seatgeek/nomad-firehose/command/evaluations"
-	"github.com/seatgeek/nomad-firehose/command/jobs"
-	"github.com/seatgeek/nomad-firehose/command/nodes"
+	"github.com/d3sw/nomad-firehose/command/allocations"
+	"github.com/d3sw/nomad-firehose/command/deployments"
+	"github.com/d3sw/nomad-firehose/command/evaluations"
+	"github.com/d3sw/nomad-firehose/command/jobs"
+	"github.com/d3sw/nomad-firehose/command/nodes"
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 )
