@@ -33,7 +33,7 @@ This will create a `nomad-firehose` binary in your `$GOPATH/bin` directory.
 
 Any `NOMAD_*` env that the native `nomad` CLI tool supports are supported by this tool.
 
-Any `CONSUL_*` env that the native `consul` CLI tool supports are supported by this tool.
+Any `CONSUL_*` env that the native `consul` CLI tool supports are supported by this tool. Additionally, the variables `CONSUL_LOCK_PREFIX` (default `nomad-firehose/`) and `CONSUL_SESSION_NAME` (default `nomad-firehose-allocations`) control where leader locks are stored.
 
 The most basic requirement is `export NOMAD_ADDR=http://<ip>:4646` and `export CONSUL_HTTP_ADDR=<ip>:8500`.
 
@@ -45,11 +45,11 @@ This mean you can run more than 1 process of each firehose, and only one will ac
 
 Saving the last event time mean that restarting the process won't firehose all old changes to your sink, reducing duplicated events.
 
-The Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`.
+The Consul lock is maintained in KV at `$CONSUL_LOCK_PREFIX/${type}.lock` and the last event time is stored in KV at `$CONSUL_LOCK_PREFIX/${type}.value`.
 
 #### Consul ACL Token Permissions
 
-If the Consul cluster being used is running ACLs, the following ACL policy will allow the required access:
+If the Consul cluster being used is running ACLs, the following ACL policy will allow the required access, given the default values for `CONSUL_LOCK_PREFIX` and `CONSUL_SESSION_NAME`:
 
 ```hcl
 key "nomad-firehose" {

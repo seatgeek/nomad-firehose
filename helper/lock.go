@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"os"
+
 	consul "github.com/hashicorp/consul/api"
 	log "github.com/sirupsen/logrus"
 )
@@ -20,8 +22,13 @@ func WaitForLock(key string) (*consul.Lock, string, error) {
 		return nil, "", err
 	}
 
+	prefix, ok := os.LookupEnv("CONSUL_LOCK_PREFIX")
+	if !ok {
+		prefix = "nomad-firehose/"
+	}
+
 	lock, err := client.LockOpts(&consul.LockOptions{
-		Key:     key,
+		Key:     prefix + key,
 		Session: sessionID,
 	})
 	if err != nil {
@@ -39,9 +46,14 @@ func WaitForLock(key string) (*consul.Lock, string, error) {
 
 // Create a Consul session used for locks
 func session(c *consul.Client) (string, error) {
+	n, ok := os.LookupEnv("CONSUL_SESSION_NAME")
+	if !ok {
+		n = "nomad-firehose-allocations"
+	}
+
 	s := c.Session()
 	se := &consul.SessionEntry{
-		Name: "nomad-firehose-allocations",
+		Name: n,
 		TTL:  "15s",
 	}
 

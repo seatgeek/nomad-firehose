@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	consulLockKey   = "nomad-firehose/jobs.lock"
-	consulLockValue = "nomad-firehose/jobs.value"
+	consulLockKey   = "jobs.lock"
+	consulLockValue = "jobs.value"
 )
 
 // Firehose ...
