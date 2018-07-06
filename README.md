@@ -4,9 +4,9 @@
 
 ## Running
 
-The project got build artifacts for Linux, Darwin and Windows in the [GitHub releases tab](https://github.com/seatgeek/nomad-firehose/releases).
+The project has build artifacts for Linux, Darwin and Windows in the [GitHub releases tab](https://github.com/seatgeek/nomad-firehose/releases).
 
-A docker container is also provided at [seatgeek/nomad-firehose](https://hub.docker.com/r/seatgeek/nomad-firehose/tags/)
+A Docker container is also provided at [seatgeek/nomad-firehose](https://hub.docker.com/r/seatgeek/nomad-firehose/tags/)
 
 ## Requirements
 
