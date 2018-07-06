@@ -4,7 +4,7 @@
 
 ## Running
 
-The project got build artifacts for linux, darwin and windows in the [GitHub releases tab](https://github.com/seatgeek/nomad-firehose/releases).
+The project got build artifacts for Linux, Darwin and Windows in the [GitHub releases tab](https://github.com/seatgeek/nomad-firehose/releases).
 
 A docker container is also provided at [seatgeek/nomad-firehose](https://hub.docker.com/r/seatgeek/nomad-firehose/tags/)
 
@@ -79,7 +79,9 @@ The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_TOPIC_NAME` e
 
 The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[password]@127.0.0.1[:5672]/0`) and `$SINK_REDIS_KEY` environment variables.
 
-The `stdout` sink do not have any configuration, it will simply output the JSON to stdout for debugging.
+The `kafka` sink is configured using `$SINK_KAFKA_BROKERS` (`kafka1:9092,kafka2:9092,kafka3:9092`), and `$SINK_KAFKA_TOPIC` environment variables.
+
+The `stdout` sink does not have any configuration, it will simply output the JSON to stdout for debugging.
 
 ### `allocations`
 
@@ -132,24 +134,24 @@ The allocation output is different from the [default API response](https://www.n
 
 ### `nodes`
 
-`nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+`nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
 The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/api/nodes.html)
 
 ### `evaluations`
 
-`nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+`nomad-firehose evaluations` will monitor all evaluation changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
 The output will be equal to the [Nomad Evaluation API structure](https://www.nomadproject.io/api/evaluations.html)
 
 ### `jobs`
 
-`nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+`nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
 The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/api/jobs.html)
 
 ### `deployments`
 
-`nomad-firehose deployments` will monitor all deployment changes in the Nomad cluster and emit an firehose event per change to the configured sink.
+`nomad-firehose deployments` will monitor all deployment changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
 The output will be equal to the *full* [Nomad Deployment API structure](https://www.nomadproject.io/api/deployments.html)
