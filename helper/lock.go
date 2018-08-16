@@ -14,7 +14,7 @@ func WaitForLock(key string) (*consul.Lock, string, error) {
 		return nil, "", err
 	}
 
-	log.Info("Trying to acquire leader lock")
+	log.Infof("Trying to acquire leader lock (%s)", key)
 	sessionID, err := session(client)
 	if err != nil {
 		return nil, "", err

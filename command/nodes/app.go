@@ -32,12 +32,6 @@ type Firehose struct {
 
 // NewFirehose ...
 func NewFirehose() (*Firehose, error) {
-	lock, sessionID, err := helper.WaitForLock(consulLockKey)
-	if err != nil {
-		return nil, err
-	}
-	defer lock.Unlock()
-
 	nomadClient, err := nomad.NewClient(nomad.DefaultConfig())
 	if err != nil {
 		return nil, err
@@ -55,19 +49,22 @@ func NewFirehose() (*Firehose, error) {
 	}
 
 	return &Firehose{
-		nomadClient:     nomadClient,
-		consulClient:    consulClient,
-		consulSessionID: sessionID,
-		consulLock:      lock,
-		sink:            sink,
+		nomadClient:  nomadClient,
+		consulClient: consulClient,
+		sink:         sink,
 	}, nil
 }
 
 // Start the firehose
 func (f *Firehose) Start() error {
+	var err error
+	if f.consulLock, f.consulSessionID, err = helper.WaitForLock(consulLockKey); err != nil {
+		return err
+	}
+	defer f.consulLock.Unlock()
+
 	// Restore the last change time from Consul
-	err := f.restoreLastChangeTime()
-	if err != nil {
+	if err := f.restoreLastChangeTime(); err != nil {
 		return err
 	}
 
@@ -120,6 +117,10 @@ func (f *Firehose) restoreLastChangeTime() error {
 		log.Infof("Restoring Last Change Time to %s", sv)
 	} else {
 		log.Info("No Last Change Time restore point, starting from scratch")
+	}
+
+	if f.lastChangeIndex == 0 {
+		f.lastChangeIndex = 1
 	}
 
 	return nil
@@ -188,8 +189,8 @@ func (f *Firehose) watch() {
 		localWaitIndex := q.WaitIndex
 
 		// Only work if the WaitIndex have changed
-		if remoteWaitIndex <= localWaitIndex {
-			log.Debugf("Clients index is unchanged (%d <= %d)", remoteWaitIndex, localWaitIndex)
+		if remoteWaitIndex == localWaitIndex {
+			log.Debugf("Clients index is unchanged (%d == %d)", remoteWaitIndex, localWaitIndex)
 			continue
 		}
 
