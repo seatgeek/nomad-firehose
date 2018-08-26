@@ -10,6 +10,7 @@ import (
 	"github.com/seatgeek/nomad-firehose/command/evaluations"
 	"github.com/seatgeek/nomad-firehose/command/jobs"
 	"github.com/seatgeek/nomad-firehose/command/nodes"
+	"github.com/seatgeek/nomad-firehose/helper"
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 )
@@ -44,8 +45,9 @@ func main() {
 					return err
 				}
 
-				err = firehose.Start()
-				if err != nil {
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
 					return err
 				}
 
@@ -61,8 +63,9 @@ func main() {
 					return err
 				}
 
-				err = firehose.Start()
-				if err != nil {
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
 					return err
 				}
 
@@ -78,8 +81,9 @@ func main() {
 					return err
 				}
 
-				err = firehose.Start()
-				if err != nil {
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
 					return err
 				}
 
@@ -95,8 +99,9 @@ func main() {
 					return err
 				}
 
-				err = firehose.Start()
-				if err != nil {
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
 					return err
 				}
 
@@ -112,8 +117,9 @@ func main() {
 					return err
 				}
 
-				err = firehose.Start()
-				if err != nil {
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
 					return err
 				}
 

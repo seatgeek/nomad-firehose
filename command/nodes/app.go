@@ -2,32 +2,21 @@ package nodes
 
 import (
 	"encoding/json"
-	"os"
-	"os/signal"
-	"strconv"
+	"fmt"
 	"time"
 
-	consul "github.com/hashicorp/consul/api"
 	nomad "github.com/hashicorp/nomad/api"
-	"github.com/seatgeek/nomad-firehose/helper"
 	"github.com/seatgeek/nomad-firehose/sink"
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	consulLockKey   = "nomad-firehose/clients.lock"
-	consulLockValue = "nomad-firehose/clients.value"
-)
-
 // Firehose ...
 type Firehose struct {
-	nomadClient     *nomad.Client
-	consulClient    *consul.Client
-	consulSessionID string
-	consulLock      *consul.Lock
-	stopCh          chan struct{}
-	lastChangeIndex uint64
-	sink            sink.Sink
+	lastChangeIndex   uint64
+	lastChangeIndexCh chan interface{}
+	nomadClient       *nomad.Client
+	sink              sink.Sink
+	stopCh            chan struct{}
 }
 
 // NewFirehose ...
@@ -37,57 +26,56 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	consulClient, err := consul.NewClient(consul.DefaultConfig())
+	sink, err := sink.GetSink()
 	if err != nil {
 		return nil, err
 	}
 
-	sink, err := sink.GetSink()
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
 	return &Firehose{
-		nomadClient:  nomadClient,
-		consulClient: consulClient,
-		sink:         sink,
+		nomadClient:       nomadClient,
+		sink:              sink,
+		stopCh:            make(chan struct{}, 1),
+		lastChangeIndexCh: make(chan interface{}, 1),
 	}, nil
 }
 
+func (f *Firehose) Name() string {
+	return "nodes"
+}
+
+func (f *Firehose) UpdateCh() <-chan interface{} {
+	return f.lastChangeIndexCh
+}
+
+func (f *Firehose) SetRestoreValue(restoreValue interface{}) error {
+	switch restoreValue.(type) {
+	case int:
+		f.lastChangeIndex = uint64(restoreValue.(int))
+	case int64:
+		f.lastChangeIndex = uint64(restoreValue.(int64))
+	default:
+		return fmt.Errorf("Unknown restore type '%T' with value '%+v'", restoreValue, restoreValue)
+	}
+	return nil
+}
+
 // Start the firehose
-func (f *Firehose) Start() error {
-	var err error
-	if f.consulLock, f.consulSessionID, err = helper.WaitForLock(consulLockKey); err != nil {
-		return err
-	}
-	defer f.consulLock.Unlock()
-
-	// Restore the last change time from Consul
-	if err := f.restoreLastChangeTime(); err != nil {
-		return err
-	}
-
+func (f *Firehose) Start() {
 	go f.sink.Start()
 
 	// Stop chan for all tasks to depend on
 	f.stopCh = make(chan struct{})
 
-	// setup signal handler for graceful shutdown
-	go f.signalHandler()
-
 	// watch for allocation changes
 	go f.watch()
 
-	// Save the last event time every 10s
-	go f.persistLastChangeTime(10)
+	// Save the last event time every 5s
+	go f.persistLastChangeTime(5 * time.Second)
 
 	// wait forever for a stop signal to happen
-	for {
-		select {
-		case <-f.stopCh:
-			return nil
-		}
+	select {
+	case <-f.stopCh:
+		return
 	}
 }
 
@@ -95,65 +83,22 @@ func (f *Firehose) Start() error {
 func (f *Firehose) Stop() {
 	close(f.stopCh)
 	f.sink.Stop()
-	f.writeLastChangeTime()
-}
-
-// Read the Last Change Time from Consul KV, so we don't re-process tasks over and over on restart
-func (f *Firehose) restoreLastChangeTime() error {
-	kv, _, err := f.consulClient.KV().Get(consulLockValue, &consul.QueryOptions{})
-	if err != nil {
-		return err
-	}
-
-	// Ensure we got
-	if kv != nil && kv.Value != nil {
-		sv := string(kv.Value)
-		v, err := strconv.ParseInt(sv, 10, 64)
-		if err != nil {
-			return err
-		}
-
-		f.lastChangeIndex = uint64(v)
-		log.Infof("Restoring Last Change Time to %s", sv)
-	} else {
-		log.Info("No Last Change Time restore point, starting from scratch")
-	}
-
-	if f.lastChangeIndex == 0 {
-		f.lastChangeIndex = 1
-	}
-
-	return nil
 }
 
 // Write the Last Change Time to Consul so if the process restarts,
 // it will try to resume from where it left off, not emitting tons of double events for
 // old events
 func (f *Firehose) persistLastChangeTime(interval time.Duration) {
-	ticker := time.NewTicker(interval * time.Second)
+	ticker := time.NewTicker(interval)
 
 	for {
 		select {
 		case <-f.stopCh:
+			f.lastChangeIndexCh <- f.lastChangeIndex
 			break
 		case <-ticker.C:
-			f.writeLastChangeTime()
+			f.lastChangeIndexCh <- f.lastChangeIndex
 		}
-	}
-}
-
-func (f *Firehose) writeLastChangeTime() {
-	v := strconv.FormatUint(f.lastChangeIndex, 10)
-
-	log.Infof("Writing lastChangedTime to KV: %s", v)
-	kv := &consul.KVPair{
-		Key:     consulLockValue,
-		Value:   []byte(v),
-		Session: f.consulSessionID,
-	}
-	_, err := f.consulClient.KV().Put(kv, &consul.WriteOptions{})
-	if err != nil {
-		log.Error(err)
 	}
 }
 
@@ -220,19 +165,5 @@ func (f *Firehose) watch() {
 		// Update WaitIndex and Last Change Time for next iteration
 		q.WaitIndex = meta.LastIndex
 		f.lastChangeIndex = newMax
-	}
-}
-
-// Close the stopCh if we get a signal, so we can gracefully shut down
-func (f *Firehose) signalHandler() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-
-	select {
-	case <-c:
-		log.Info("Caught signal, releasing lock and stopping...")
-		f.Stop()
-	case <-f.stopCh:
-		break
 	}
 }
