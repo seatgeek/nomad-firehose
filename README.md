@@ -69,6 +69,7 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `kinesis`
 - `nsq`
 - `redis`
+- `kafka`
 - `stdout`
 
 The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY`, `$SINK_AMQP_WORKERS` (default: `1`) environment variables.
