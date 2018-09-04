@@ -70,6 +70,7 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `nsq`
 - `redis`
 - `kafka`
+- `mongo`
 - `stdout`
 
 The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY`, `$SINK_AMQP_WORKERS` (default: `1`) environment variables.
@@ -81,6 +82,8 @@ The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_TOPIC_NAME` e
 The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[password]@127.0.0.1[:5672]/0`) and `$SINK_REDIS_KEY` environment variables.
 
 The `kafka` sink is configured using `$SINK_KAFKA_BROKERS` (`kafka1:9092,kafka2:9092,kafka3:9092`), and `$SINK_KAFKA_TOPIC` environment variables.
+
+The `mongo` sink is configured using `$SINK_MONGODB_CONNECTION` (`mongodb://localhost:27017/`), `$SINK_MONGODB_DATABASE` and `$SINK_MONGODB_COLLECTION` environment variables.
 
 The `stdout` sink does not have any configuration, it will simply output the JSON to stdout for debugging.
 
