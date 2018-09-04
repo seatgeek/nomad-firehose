@@ -25,9 +25,11 @@ func GetSink() (Sink, error) {
 		return NewNSQ()
 	case "redis":
 		return NewRedis()
+	case "mongodb":
+		return NewMongodb()
 	case "stdout":
 		return NewStdout()
 	default:
-		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, kafka, kinesis, nsq, rabbitmq, redis or stdout", sinkType)
+		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, kafka, kinesis, nsq, rabbitmq, redis, mongodb or stdout", sinkType)
 	}
 }
