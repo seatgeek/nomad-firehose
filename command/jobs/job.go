@@ -8,23 +8,27 @@ import (
 )
 
 // Firehose ...
-type Firehose struct {
+type JobFirehose struct {
 	FirehoseBase
 }
 
 // NewFirehose ...
-func NewFirehose() (*Firehose, error) {
+func NewJobFirehose() (*JobFirehose, error) {
 	base, err := NewFirehoseBase()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Firehose{FirehoseBase: *base}, nil
+	return &JobFirehose{FirehoseBase: *base}, nil
 }
 
 
+func (f *JobFirehose) Name() string {
+	return "jobs"
+}
+
 // Publish an update from the firehose
-func (f *FirehoseBase) Publish(update *nomad.Job) {
+func (f *JobFirehose) Publish(update *nomad.Job) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
@@ -33,21 +37,19 @@ func (f *FirehoseBase) Publish(update *nomad.Job) {
 	f.sink.Put(b)
 }
 
-func (f *Firehose) watch() {
-	go f.FirehoseBase.watch()
 
-	for {
-		select {
-		case job := <- f.jobListSink:
-			go func(jobID string) {
-				fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
-				if err != nil {
-					log.Errorf("Could not read job %s: %s", jobID, err)
-					return
-				}
+func (f *JobFirehose) Start() {
+	f.FirehoseBase.Start(f.watchJobList)
+}
 
-				f.Publish(fullJob)
-			}(job.ID)
+func (f *JobFirehose) watchJobList(job *nomad.JobListStub) {
+	go func(jobID string) {
+		fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
+		if err != nil {
+			log.Errorf("Could not read job %s: %s", jobID, err)
+			return
 		}
-	}
+
+		f.Publish(fullJob)
+	}(job.ID)
 }

@@ -9,13 +9,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+
+type WatchJobListFunc func(job *nomad.JobListStub)
+
+
 // Firehose ...
 type FirehoseBase struct {
 	lastChangeIndex  uint64
 	lastChangeTimeCh chan interface{}
 	nomadClient      *nomad.Client
 	sink             sink.Sink
-	jobListSink      chan *nomad.JobListStub
 	stopCh           chan struct{}
 }
 
@@ -31,19 +34,12 @@ func NewFirehoseBase() (*FirehoseBase, error) {
 		return nil, err
 	}
 
-	jobListSink := make(chan *nomad.JobListStub)
-
 	return &FirehoseBase{
 		nomadClient:      nomadClient,
-		jobListSink:      jobListSink,
 		sink:             sink,
 		stopCh:           make(chan struct{}, 1),
 		lastChangeTimeCh: make(chan interface{}, 1),
 	}, nil
-}
-
-func (f *FirehoseBase) Name() string {
-	return "jobs"
 }
 
 func (f *FirehoseBase) UpdateCh() <-chan interface{} {
@@ -63,11 +59,11 @@ func (f *FirehoseBase) SetRestoreValue(restoreValue interface{}) error {
 }
 
 // Start the firehose
-func (f *FirehoseBase) Start() {
+func (f *FirehoseBase) Start(w WatchJobListFunc) {
 	go f.sink.Start()
 
 	// watch for allocation changes
-	go f.watch()
+	go f.watch(w)
 
 	// Save the last event time every 5s
 	go f.persistLastChangeTime(5 * time.Second)
@@ -103,7 +99,7 @@ func (f *FirehoseBase) persistLastChangeTime(interval time.Duration) {
 }
 
 // Continously watch for changes to the allocation list and publish it as updates
-func (f *FirehoseBase) watch() {
+func (f *FirehoseBase) watch(w WatchJobListFunc) {
 	q := &nomad.QueryOptions{
 		WaitIndex:  f.lastChangeIndex,
 		WaitTime:   5 * time.Minute,
@@ -141,7 +137,7 @@ func (f *FirehoseBase) watch() {
 				newMax = job.ModifyIndex
 			}
 
-			f.jobListSink <- job
+			w(job)
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration

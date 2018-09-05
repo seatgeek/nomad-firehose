@@ -94,7 +94,25 @@ func main() {
 			Name:  "jobs",
 			Usage: "Firehose nomad job changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := jobs.NewFirehose()
+				firehose, err := jobs.NewJobFirehose()
+				if err != nil {
+					return err
+				}
+
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
+			Name:  "jobliststubs",
+			Usage: "Firehose nomad job info changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := jobs.NewJobListStubFirehose()
 				if err != nil {
 					return err
 				}
