@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,16 +10,17 @@ import (
 )
 
 // Firehose ...
-type Firehose struct {
+type FirehoseBase struct {
 	lastChangeIndex  uint64
 	lastChangeTimeCh chan interface{}
 	nomadClient      *nomad.Client
 	sink             sink.Sink
+	jobListSink      chan *nomad.JobListStub
 	stopCh           chan struct{}
 }
 
 // NewFirehose ...
-func NewFirehose() (*Firehose, error) {
+func NewFirehoseBase() (*FirehoseBase, error) {
 	nomadClient, err := nomad.NewClient(nomad.DefaultConfig())
 	if err != nil {
 		return nil, err
@@ -31,23 +31,26 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	return &Firehose{
+	jobListSink := make(chan *nomad.JobListStub)
+
+	return &FirehoseBase{
 		nomadClient:      nomadClient,
+		jobListSink:      jobListSink,
 		sink:             sink,
 		stopCh:           make(chan struct{}, 1),
 		lastChangeTimeCh: make(chan interface{}, 1),
 	}, nil
 }
 
-func (f *Firehose) Name() string {
+func (f *FirehoseBase) Name() string {
 	return "jobs"
 }
 
-func (f *Firehose) UpdateCh() <-chan interface{} {
+func (f *FirehoseBase) UpdateCh() <-chan interface{} {
 	return f.lastChangeTimeCh
 }
 
-func (f *Firehose) SetRestoreValue(restoreValue interface{}) error {
+func (f *FirehoseBase) SetRestoreValue(restoreValue interface{}) error {
 	switch restoreValue.(type) {
 	case int:
 		f.lastChangeIndex = uint64(restoreValue.(int))
@@ -60,7 +63,7 @@ func (f *Firehose) SetRestoreValue(restoreValue interface{}) error {
 }
 
 // Start the firehose
-func (f *Firehose) Start() {
+func (f *FirehoseBase) Start() {
 	go f.sink.Start()
 
 	// watch for allocation changes
@@ -77,7 +80,7 @@ func (f *Firehose) Start() {
 }
 
 // Stop the firehose
-func (f *Firehose) Stop() {
+func (f *FirehoseBase) Stop() {
 	close(f.stopCh)
 	f.sink.Stop()
 }
@@ -85,7 +88,7 @@ func (f *Firehose) Stop() {
 // Write the Last Change Time to Consul so if the process restarts,
 // it will try to resume from where it left off, not emitting tons of double events for
 // old events
-func (f *Firehose) persistLastChangeTime(interval time.Duration) {
+func (f *FirehoseBase) persistLastChangeTime(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 
 	for {
@@ -99,18 +102,8 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 	}
 }
 
-// Publish an update from the firehose
-func (f *Firehose) Publish(update *nomad.Job) {
-	b, err := json.Marshal(update)
-	if err != nil {
-		log.Error(err)
-	}
-
-	f.sink.Put(b)
-}
-
 // Continously watch for changes to the allocation list and publish it as updates
-func (f *Firehose) watch() {
+func (f *FirehoseBase) watch() {
 	q := &nomad.QueryOptions{
 		WaitIndex:  f.lastChangeIndex,
 		WaitTime:   5 * time.Minute,
@@ -148,15 +141,7 @@ func (f *Firehose) watch() {
 				newMax = job.ModifyIndex
 			}
 
-			go func(jobID string) {
-				fullJob, _, err := f.nomadClient.Jobs().Info(jobID, &nomad.QueryOptions{})
-				if err != nil {
-					log.Errorf("Could not read job %s: %s", jobID, err)
-					return
-				}
-
-				f.Publish(fullJob)
-			}(job.ID)
+			f.jobListSink <- job
 		}
 
 		// Update WaitIndex and Last Change Time for next iteration
