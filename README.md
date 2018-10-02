@@ -152,7 +152,13 @@ The output will be equal to the [Nomad Evaluation API structure](https://www.nom
 
 `nomad-firehose jobs` will monitor all job changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
-The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/api/jobs.html)
+The output will be equal to the *full* [Nomad Job API structure](https://www.nomadproject.io/api/jobs.html#read-job)
+
+### `jobliststubs`
+
+`nomad-firehose jobliststubs` will monitor all job changes in the Nomad cluster and emit a firehose event per change to the configured sink.
+
+The output will be equal to the job list [Nomad Job API structure](https://www.nomadproject.io/api/jobs.html#list-jobs)
 
 ### `deployments`
 
