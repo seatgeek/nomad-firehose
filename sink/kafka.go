@@ -1,7 +1,10 @@
 package sink
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -23,6 +26,25 @@ type KafkaSink struct {
 	putCh  chan []byte
 }
 
+func createTlsConfiguration() (t *tls.Config) {
+	caFile := os.Getenv("SINK_KAFKA_CA_CERT_PATH")
+	if caFile != "" {
+		caCert, err := ioutil.ReadFile(caFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		t = &tls.Config{
+			RootCAs:            caCertPool,
+		}
+	}
+
+	return t
+}
+
 // NewKafka ...
 func NewKafka() (*KafkaSink, error) {
 	brokers := os.Getenv("SINK_KAFKA_BROKERS")
@@ -41,6 +63,12 @@ func NewKafka() (*KafkaSink, error) {
 
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
+
+	tlsConfig := createTlsConfiguration()
+	if tlsConfig != nil {
+		config.Net.TLS.Config = tlsConfig
+		config.Net.TLS.Enable = true
+	}
 
 	producer, err := sarama.NewSyncProducer(brokerList, config)
 	if err != nil {
