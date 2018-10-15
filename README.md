@@ -60,6 +60,11 @@ session "" {
 }
 ```
 
+### Kafka
+
+To connect to Kafka with TLS, set the SINK_KAFKA_CA_CERT_PATH to the path to your CA cert file
+
+
 ## Usage
 
 The `nomad-firehose` binary has several helper subcommands.
