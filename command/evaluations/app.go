@@ -122,6 +122,8 @@ func (f *Firehose) watch() {
 		AllowStale: true,
 	}
 
+	newMax := f.lastChangeIndex
+
 	for {
 		log.Infof("Fetching evaluations from Nomad: %+v", q)
 
@@ -132,25 +134,29 @@ func (f *Firehose) watch() {
 			continue
 		}
 
+		remoteWaitIndex := meta.LastIndex
+		localWaitIndex := q.WaitIndex
+
 		// Only work if the WaitIndex have changed
-		if meta.LastIndex == f.lastChangeIndex {
+		if remoteWaitIndex == localWaitIndex {
 			log.Infof("Evaluations index is unchanged (%d == %d)", meta.LastIndex, f.lastChangeIndex)
 			continue
 		}
 
-		log.Infof("Evaluations index is changed (%d <> %d)", meta.LastIndex, f.lastChangeIndex)
+		log.Infof("Evaluations index is changed (%d <> %d)", remoteWaitIndex, localWaitIndex)
 
 		// Iterate clients and find events that have changed since last run
 		for _, evaluation := range evaluations {
-			if evaluation.ModifyIndex != f.lastChangeIndex {
+			if evaluation.ModifyIndex <= newMax {
 				continue
 			}
 
-			f.Publish(evaluation)
-			evaluation = nil
-		}
+			if evaluation.ModifyIndex > newMax {
+				newMax = evaluation.ModifyIndex
+			}
 
-		evaluations = nil
+			f.Publish(evaluation)
+		}
 
 		// Update WaitIndex and Last Change Time for next iteration
 		f.lastChangeIndex = meta.LastIndex
