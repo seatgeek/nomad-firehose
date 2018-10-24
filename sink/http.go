@@ -92,7 +92,7 @@ func (s *HttpSink) send(id int) {
 	for {
 		select {
 		case data := <-s.putCh:
-			_, err := http.Post(s.address, "text/json", bytes.NewReader(data))
+			_, err := http.Post(s.address, "application/json; charset=utf-8", bytes.NewBuffer(data[:]))
 			if err != nil {
 				log.Errorf("[sink/http/%d] %s", id, err)
 			} else {
