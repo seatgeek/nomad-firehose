@@ -73,6 +73,24 @@ func main() {
 			},
 		},
 		{
+			Name:  "nodes",
+			Usage: "Firehose nomad node changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := nodes.NewNodeFirehose()
+				if err != nil {
+					return err
+				}
+
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
 			Name:  "evaluations",
 			Usage: "Firehose nomad evaluation changes",
 			Action: func(c *cli.Context) error {
