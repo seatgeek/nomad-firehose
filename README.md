@@ -147,7 +147,13 @@ The allocation output is different from the [default API response](https://www.n
 
 `nomad-firehose nodes` will monitor all node changes in the Nomad cluster and emit a firehose event per change to the configured sink.
 
-The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/api/nodes.html)
+The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/api/nodes.html#read-node)
+
+### `nodeliststubs`
+
+`nomad-firehose nodeliststubs` will monitor all node changes in the Nomad cluster and emit a firehose event per change to the configured sink.
+
+The output will be equal to the [Nomad Node API structure](https://www.nomadproject.io/api/nodes.html#list-nodes)
 
 ### `evaluations`
 
