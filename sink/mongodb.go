@@ -1,23 +1,22 @@
 package sink
 
 import (
-	"context"
 	"strconv"
 	"time"
 
 	"os"
 
 	"fmt"
-	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
 
-	mongo "github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 // MongodbSink ...
 type MongodbSink struct {
-	conn        *mongo.Client
+	session     *mgo.Session
 	database    string
 	collection  string
 	workerCount int
@@ -32,7 +31,7 @@ func NewMongodb() (*MongodbSink, error) {
 		return nil, fmt.Errorf("[sink/mongodb] Missing SINK_MONGODB_CONNECTION (example: mongodb://foo:bar@localhost:27017)")
 	}
 
-	database := os.Getenv("SINK_MONGODB_DATABASE")
+ 	database := os.Getenv("SINK_MONGODB_DATABASE")
 	if database == "" {
 		return nil, fmt.Errorf("[sink/mongodb] Mising SINK_MONGODB_DATABASE")
 	}
@@ -46,24 +45,24 @@ func NewMongodb() (*MongodbSink, error) {
 	if workerCountStr == "" {
 		workerCountStr = "1"
 	}
+
 	workerCount, err := strconv.Atoi(workerCountStr)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid SINK_MONGODB_WORKERS, must be an integer")
 	}
 
-	conn, err := mongo.NewClient(connStr)
 	if err != nil {
-		return nil, fmt.Errorf("[sink/mongodb] Invalid to connect to string: %s", err)
+		return nil, fmt.Errorf("Invalid SINK_MONGODB_WORKERS, must be an integer")
 	}
 
-	err = conn.Connect(context.Background())
+	session, err := mgo.Dial(connStr)
 	if err != nil {
 		return nil, fmt.Errorf("[sink/mongodb] failed to connect to string: %s", err)
 	}
 
 
 	return &MongodbSink{
-		conn:        conn,
+		session:     session,
 		database:    database,
 		collection:  collection,
 		workerCount: workerCount,
@@ -103,7 +102,7 @@ func (s *MongodbSink) Stop() {
 	}
 
 	close(s.stopCh)
-	defer s.conn.Disconnect(context.Background())
+	defer s.session.Close()
 }
 
 // Put ..
@@ -116,19 +115,20 @@ func (s *MongodbSink) Put(data []byte) error {
 func (s *MongodbSink) write(id int) {
 	log.Infof("[sink/mongodb/%d] Starting writer", id)
 
-	collection := s.conn.Database(s.database).Collection(s.collection)
+	c := s.session.DB(s.database).C(s.collection)
 
 	for {
 		select {
 		case data := <-s.putCh:
-			m := make(map[string]interface{})
-			err := json.Unmarshal(data, &m)
-
-			if err != nil {
+			var record bson.M
+			err := bson.UnmarshalJSON(data, &record)
+			if (err != nil) {
 				log.Errorf("[sink/mongodb/%d] %s", id, err)
 				continue
 			}
-			_, err = collection.InsertOne(context.Background(), m)
+			idRecord := bson.M{}
+			update := bson.M{"$set": record}
+			_, err = c.Upsert(idRecord, update)
 			if err != nil {
 				log.Errorf("[sink/mongodb/%d] %s", id, err)
 			} else {
