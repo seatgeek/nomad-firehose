@@ -19,7 +19,9 @@ type MongodbSink struct {
 	session     *mgo.Session
 	database    string
 	collection  string
+	idField     string
 	workerCount int
+	timestamps  bool
 	stopCh      chan interface{}
 	putCh       chan []byte
 }
@@ -40,6 +42,8 @@ func NewMongodb() (*MongodbSink, error) {
 	if collection == "" {
 		return nil, fmt.Errorf("[sink/mongodb] Missing SINK_MONGODB_COLLECTION")
 	}
+
+	idField := os.Getenv("SINK_MONGODB_ID")
 
 	workerCountStr := os.Getenv("SINK_MONGODB_WORKERS")
 	if workerCountStr == "" {
@@ -65,6 +69,7 @@ func NewMongodb() (*MongodbSink, error) {
 		session:     session,
 		database:    database,
 		collection:  collection,
+		idField:     idField,
 		workerCount: workerCount,
 		stopCh:      make(chan interface{}),
 		putCh:       make(chan []byte, 1000),
@@ -126,9 +131,19 @@ func (s *MongodbSink) write(id int) {
 				log.Errorf("[sink/mongodb/%d] %s", id, err)
 				continue
 			}
-			idRecord := bson.M{}
+
 			update := bson.M{"$set": record}
-			_, err = c.Upsert(idRecord, update)
+			if (s.idField != "") {
+				id := record[s.idField].(string)
+				if (id == "") {
+					log.Errorf("[sink/mongodb/%d] missing id field $s", id, s.idField)
+					continue
+				}
+				_, err = c.UpsertId(bson.ObjectIdHex(id), update)
+			} else {
+				err = c.Insert(update)
+			}
+
 			if err != nil {
 				log.Errorf("[sink/mongodb/%d] %s", id, err)
 			} else {

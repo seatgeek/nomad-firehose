@@ -88,7 +88,7 @@ The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[passwor
 
 The `kafka` sink is configured using `$SINK_KAFKA_BROKERS` (`kafka1:9092,kafka2:9092,kafka3:9092`), and `$SINK_KAFKA_TOPIC` environment variables.
 
-The `mongo` sink is configured using `$SINK_MONGODB_CONNECTION` (`mongodb://localhost:27017/`), `$SINK_MONGODB_DATABASE` and `$SINK_MONGODB_COLLECTION` environment variables.
+The `mongo` sink is configured using `$SINK_MONGODB_CONNECTION` (`mongodb://localhost:27017/`), `$SINK_MONGODB_DATABASE`, `$SINK_MONGODB_COLLECTION` and `$SINK_MONGODB_ID` environment variables.
 
 The `http` sink is configured using `$SINK_HTTP_ADDRESS` (`localhost:8080/allocations`)` environment variable.
 
