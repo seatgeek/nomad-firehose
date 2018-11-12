@@ -10,7 +10,7 @@ A Docker container is also provided at [seatgeek/nomad-firehose](https://hub.doc
 
 ## Requirements
 
-- Go 1.8
+- Go 1.11
 
 ## Building
 

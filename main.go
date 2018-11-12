@@ -15,11 +15,14 @@ import (
 	cli "gopkg.in/urfave/cli.v1"
 )
 
+var GitCommit string
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "nomad-firehose"
 	app.Usage = "easily firehose nomad events to a event sink"
-	app.Version = "0.1"
+
+	app.Version = GitCommit
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
