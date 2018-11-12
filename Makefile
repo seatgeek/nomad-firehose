@@ -11,12 +11,12 @@ $(BUILD_DIR):
 
 .PHONY: install
 install:
-	go get github.com/kardianos/govendor
-	govendor sync
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	dep ensure
 
 .PHONY: build
 build: install
-	govendor sync
+	dep ensure
 	go install
 
 .PHONY: fmt
@@ -43,17 +43,9 @@ vet: fmt
 BINARIES = $(addprefix $(BUILD_DIR)/nomad-firehose-, $(GOBUILD))
 $(BINARIES): $(BUILD_DIR)/nomad-firehose-%: $(BUILD_DIR)
 	@echo "=> building $@ ..."
-	GOOS=$(call GET_GOOS,$*) GOARCH=$(call GET_GOARCH,$*) CGO_ENABLED=0 govendor build -o $@
+	GOOS=$(call GET_GOOS,$*) GOARCH=$(call GET_GOARCH,$*) CGO_ENABLED=0 go build -o $@
 
 .PHONY: dist
 dist: install fmt vet
 	@echo "=> building ..."
 	$(MAKE) -j $(BINARIES)
-
-.PHONY: docker
-docker:
-	@echo "=> build and push Docker image ..."
-	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
-	docker build -f Dockerfile -t seatgeek/nomad-firehose:$(COMMIT) .
-	docker tag seatgeek/nomad-firehose:$(COMMIT) seatgeek/nomad-firehose:$(TAG)
-	docker push seatgeek/nomad-firehose:$(TAG)
