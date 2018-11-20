@@ -45,7 +45,7 @@ This mean you can run more than 1 process of each firehose, and only one will ac
 
 Saving the last event time mean that restarting the process won't firehose all old changes to your sink, reducing duplicated events.
 
-The Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`.
+By default, the Consul lock is maintained in KV at `nomad-firehose/${type}.lock` and the last event time is stored in KV at `nomad-firehose/${type}.value`. You can change the prefix from `nomad-firehose` by setting `NOMAD_FIREHOSE_CONSUL_PREFIX` to your desired prefix.
 
 #### Consul ACL Token Permissions
 
@@ -59,6 +59,8 @@ session "" {
   policy = "write"
 }
 ```
+
+If you've set a custom prefix, specify that in the `key` ACL entry instead.
 
 ### Kafka
 
