@@ -46,8 +46,8 @@
   version = "0.8.6"
 
 [[constraint]]
-  name = "github.com/mongodb/mongo-go-driver"
-  version = "0.0.17"
+  name = "github.com/globalsign/mgo"
+  version = "r2018.06.15"
 
 [[constraint]]
   name = "github.com/nsqio/go-nsq"
