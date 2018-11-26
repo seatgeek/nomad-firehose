@@ -51,7 +51,8 @@ func (s *StdoutSink) Stop() {
 }
 
 // Put ..
-func (s *StdoutSink) Put(data []byte) error {
-	fmt.Println(string(data))
+func (s *StdoutSink) Put(key string, data []byte) error {
+	fmt.Println("key: %s", key)
+	fmt.Println("value: %s", string(data))
 	return nil
 }

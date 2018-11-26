@@ -83,7 +83,7 @@ func (s *KinesisSink) Stop() {
 }
 
 // Put ..
-func (s *KinesisSink) Put(data []byte) error {
+func (s *KinesisSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
 	return nil

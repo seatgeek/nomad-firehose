@@ -125,13 +125,13 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 }
 
 // publish an update from the firehose
-func (f *Firehose) publish(update *AllocationUpdate) {
+func (f *Firehose) publish(key string, update *AllocationUpdate) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
 	}
 
-	f.sink.Put(b)
+	f.sink.Put(key, b)
 }
 
 // Continously watch for changes to the allocation list and publish it as updates
@@ -194,7 +194,7 @@ func (f *Firehose) watch() {
 						TaskFinishedAt:     &taskInfo.FinishedAt,
 					}
 
-					f.publish(payload)
+					f.publish(allocation.ID, payload)
 				}
 			}
 		}

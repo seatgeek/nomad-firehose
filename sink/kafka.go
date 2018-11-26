@@ -20,6 +20,8 @@ type KafkaSink struct {
 	// Kafka topic
 	Topic string
 
+	key string
+	
 	producer sarama.SyncProducer
 
 	stopCh chan interface{}
@@ -108,8 +110,9 @@ func (s *KafkaSink) Stop() {
 }
 
 // Put ..
-func (s *KafkaSink) Put(data []byte) error {
+func (s *KafkaSink) Put(key string, data []byte) error {
 	s.putCh <- data
+	s.key <- key
 
 	return nil
 }
