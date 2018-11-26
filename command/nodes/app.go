@@ -103,13 +103,13 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(update *nomad.Node) {
+func (f *Firehose) Publish(key string, update *nomad.Node) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
 	}
 
-	f.sink.Put(b)
+	f.sink.Put(key, b)
 }
 
 // Continously watch for changes to the allocation list and publish it as updates
@@ -158,7 +158,7 @@ func (f *Firehose) watch() {
 					return
 				}
 
-				f.Publish(fullClient)
+				f.Publish(clientId, fullClient)
 			}(client.ID)
 		}
 

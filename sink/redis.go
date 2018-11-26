@@ -81,7 +81,7 @@ func (s *RedisSink) Stop() {
 }
 
 // Put ..
-func (s *RedisSink) Put(key []byte, data []byte) error {
+func (s *RedisSink) Put(key string, data []byte) error {
 	s.putCh <- data
 	return nil
 }

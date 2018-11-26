@@ -21,7 +21,7 @@ type KafkaSink struct {
 	Topic string
 
 	key string
-	
+
 	producer sarama.SyncProducer
 
 	stopCh chan interface{}
@@ -112,7 +112,7 @@ func (s *KafkaSink) Stop() {
 // Put ..
 func (s *KafkaSink) Put(key string, data []byte) error {
 	s.putCh <- data
-	s.key <- key
+	s.key = key
 
 	return nil
 }
@@ -125,6 +125,7 @@ func (s *KafkaSink) write() {
 		case data := <-s.putCh:
 			message := &sarama.ProducerMessage{Topic: s.Topic}
 			message.Value = sarama.StringEncoder(string(data))
+			message.Key = sarama.StringEncoder(s.key)
 			partition, offset, err := s.producer.SendMessage(message)
 			if err != nil {
 				log.Errorf("Failed to produce message: %s", err)
