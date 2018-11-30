@@ -111,13 +111,13 @@ func (f *Firehose) persistLastChangeTime(interval time.Duration) {
 }
 
 // Publish an update from the firehose
-func (f *Firehose) Publish(key string, update *nomad.Deployment) {
+func (f *Firehose) Publish(update *nomad.Deployment) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
 	}
 
-	f.sink.Put(key, b)
+	f.sink.Put(update.ID, b)
 }
 
 // Continously watch for changes to the deployment list and publish it as updates
@@ -166,7 +166,7 @@ func (f *Firehose) watch() {
 					return
 				}
 
-				f.Publish(DeploymentID, fullDeployment)
+				f.Publish(fullDeployment)
 			}(deployment.ID)
 		}
 

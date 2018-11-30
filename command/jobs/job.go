@@ -28,13 +28,13 @@ func (f *JobFirehose) Name() string {
 }
 
 // Publish an update from the firehose
-func (f *JobFirehose) Publish(key string, update *nomad.Job) {
+func (f *JobFirehose) Publish(update *nomad.Job) {
 	b, err := json.Marshal(update)
 	if err != nil {
 		log.Error(err)
 	}
 
-	f.sink.Put(key, b)
+	f.sink.Put(*update.ID, b)
 }
 
 
@@ -50,6 +50,6 @@ func (f *JobFirehose) watchJobList(job *nomad.JobListStub) {
 			return
 		}
 
-		f.Publish(jobID, fullJob)
+		f.Publish(fullJob)
 	}(job.ID)
 }

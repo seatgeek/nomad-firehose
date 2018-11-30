@@ -52,6 +52,6 @@ func (s *StdoutSink) Stop() {
 
 // Put ..
 func (s *StdoutSink) Put(key string, data []byte) error {
-	fmt.Printf("key: %s, message: %s\n", key, string(data))
+	fmt.Println(string(data))
 	return nil
 }
