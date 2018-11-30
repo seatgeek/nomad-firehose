@@ -31,9 +31,7 @@ func NewKinesis() (*KinesisSink, error) {
 	}
 
 	partitionKey := os.Getenv("SINK_KINESIS_PARTITION_KEY")
-	if partitionKey == "" {
-		return nil, fmt.Errorf("[sink/kinesis] Missing SINK_KINESIS_PARTITION_KEY")
-	}
+
 
 	sess := session.Must(session.NewSession())
 	svc := kinesis.New(sess)
@@ -86,6 +84,9 @@ func (s *KinesisSink) Stop() {
 func (s *KinesisSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
+	if s.partitionKey == "" {
+		s.partitionKey = key
+	}
 	return nil
 }
 
