@@ -9,9 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 type WatchJobListFunc func(job *nomad.JobListStub)
-
 
 // Firehose ...
 type FirehoseBase struct {

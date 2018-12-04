@@ -8,6 +8,6 @@ type Sink interface {
 }
 
 type Data struct {
-	key string
+	key   string
 	value []byte
 }

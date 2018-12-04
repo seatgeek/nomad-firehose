@@ -23,7 +23,7 @@ type KafkaSink struct {
 	producer sarama.SyncProducer
 
 	stopCh chan interface{}
-	putCh chan Data
+	putCh  chan Data
 }
 
 func createTlsConfiguration() (t *tls.Config) {
@@ -38,7 +38,7 @@ func createTlsConfiguration() (t *tls.Config) {
 		caCertPool.AppendCertsFromPEM(caCert)
 
 		t = &tls.Config{
-			RootCAs:            caCertPool,
+			RootCAs: caCertPool,
 		}
 	}
 

@@ -7,8 +7,8 @@ import (
 
 	"os"
 
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
@@ -60,7 +60,6 @@ func NewMongodb() (*MongodbSink, error) {
 	if err != nil {
 		return nil, fmt.Errorf("[sink/mongodb] failed to connect to string: %s", err)
 	}
-
 
 	return &MongodbSink{
 		conn:        conn,

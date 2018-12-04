@@ -43,5 +43,3 @@ func (f *JobListStubFirehose) Publish(update *nomad.JobListStub) {
 func (f *JobListStubFirehose) watchJobList(job *nomad.JobListStub) {
 	f.Publish(job)
 }
-
-

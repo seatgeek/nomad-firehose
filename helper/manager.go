@@ -21,9 +21,9 @@ type Runner interface {
 
 func NewManager(r Runner) *Manager {
 	return &Manager{
-		runner: r,
-		logger: log.WithField("type", r.Name()),
-		stopCh: make(chan interface{}),
+		runner:                   r,
+		logger:                   log.WithField("type", r.Name()),
+		stopCh:                   make(chan interface{}),
 		voluntarilyReleaseLockCh: make(chan interface{}),
 	}
 }

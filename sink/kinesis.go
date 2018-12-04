@@ -32,7 +32,6 @@ func NewKinesis() (*KinesisSink, error) {
 
 	partitionKey := os.Getenv("SINK_KINESIS_PARTITION_KEY")
 
-
 	sess := session.Must(session.NewSession())
 	svc := kinesis.New(sess)
 
