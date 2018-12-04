@@ -20,7 +20,7 @@ type KinesisSink struct {
 	streamName   string
 	partitionKey string
 	stopCh       chan interface{}
-	putCh        chan []byte
+	putCh        chan Data
 }
 
 // NewKinesis ...
@@ -42,7 +42,7 @@ func NewKinesis() (*KinesisSink, error) {
 		streamName:   streamName,
 		partitionKey: partitionKey,
 		stopCh:       make(chan interface{}),
-		putCh:        make(chan []byte, 1000),
+		putCh:        make(chan Data, 1000),
 	}, nil
 }
 
@@ -81,12 +81,9 @@ func (s *KinesisSink) Stop() {
 }
 
 // Put ..
-func (s *KinesisSink) Put(key string, data []byte) error {
-	s.putCh <- data
+func (s *KinesisSink) Put(key string, value []byte) error {
+	s.putCh <- Data{key, value}
 
-	if s.partitionKey == "" {
-		s.partitionKey = key
-	}
 	return nil
 }
 
@@ -94,13 +91,18 @@ func (s *KinesisSink) write(id int) {
 	log.Infof("[sink/kinesis/%d] Starting writer", id)
 
 	streamName := aws.String(s.streamName)
-	partitionKey := aws.String(s.partitionKey)
 
 	for {
 		select {
 		case data := <-s.putCh:
+
+			partitionKey := aws.String(s.partitionKey)
+			if s.partitionKey == "" {
+				partitionKey = aws.String(data.key)
+			}
+
 			putOutput, err := s.kinesis.PutRecord(&kinesis.PutRecordInput{
-				Data:         data,
+				Data:         data.value,
 				StreamName:   streamName,
 				PartitionKey: partitionKey,
 			})

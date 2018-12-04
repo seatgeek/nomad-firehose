@@ -20,12 +20,10 @@ type KafkaSink struct {
 	// Kafka topic
 	Topic string
 
-	key string
-
 	producer sarama.SyncProducer
 
 	stopCh chan interface{}
-	putCh  chan []byte
+	putCh chan Data
 }
 
 func createTlsConfiguration() (t *tls.Config) {
@@ -83,7 +81,7 @@ func NewKafka() (*KafkaSink, error) {
 		Topic:    topic,
 		producer: producer,
 		stopCh:   make(chan interface{}),
-		putCh:    make(chan []byte, 1000),
+		putCh:    make(chan Data, 1000),
 	}, nil
 }
 
@@ -110,9 +108,8 @@ func (s *KafkaSink) Stop() {
 }
 
 // Put ..
-func (s *KafkaSink) Put(key string, data []byte) error {
-	s.putCh <- data
-	s.key = key
+func (s *KafkaSink) Put(key string, value []byte) error {
+	s.putCh <- Data{key, value}
 
 	return nil
 }
@@ -124,8 +121,8 @@ func (s *KafkaSink) write() {
 		select {
 		case data := <-s.putCh:
 			message := &sarama.ProducerMessage{Topic: s.Topic}
-			message.Value = sarama.StringEncoder(string(data))
-			message.Key = sarama.StringEncoder(s.key)
+			message.Value = sarama.StringEncoder(string(data.value))
+			message.Key = sarama.StringEncoder(data.key)
 			partition, offset, err := s.producer.SendMessage(message)
 			if err != nil {
 				log.Errorf("Failed to produce message: %s", err)

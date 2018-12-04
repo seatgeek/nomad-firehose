@@ -6,3 +6,8 @@ type Sink interface {
 	Stop()
 	Put(key string, data []byte) error
 }
+
+type Data struct {
+	key string
+	value []byte
+}
