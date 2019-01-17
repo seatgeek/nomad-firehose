@@ -70,6 +70,14 @@ func NewKafka() (*KafkaSink, error) {
 		config.Net.TLS.Enable = true
 	}
 
+	user := os.Getenv("SINK_KAFKA_USER")
+	if user != "" {
+		password := os.Getenv("SINK_KAFKA_PASSWORD")
+		config.SASL.Enable = true
+		config.SASL.User = user
+		config.SASL.Password = password
+	}
+
 	producer, err := sarama.NewSyncProducer(brokerList, config)
 	if err != nil {
 		log.Fatal(err)
