@@ -62,7 +62,8 @@ session "" {
 
 ### Kafka
 
-To connect to Kafka with TLS, set the SINK_KAFKA_CA_CERT_PATH to the path to your CA cert file
+To connect to Kafka with TLS, set the SINK_KAFKA_CA_CERT_PATH to the path to your CA cert file.
+To use SASL/PLAIN authentication, set `$SINK_KAFKA_USER` and `$SINK_KAFKA_PASSWORD` environment variables.
 
 
 ## Usage
