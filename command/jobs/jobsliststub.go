@@ -13,8 +13,8 @@ type JobListStubFirehose struct {
 }
 
 // NewFirehose ...
-func NewJobListStubFirehose() (*JobListStubFirehose, error) {
-	base, err := NewFirehoseBase()
+func NewJobListStubFirehose(authToken string) (*JobListStubFirehose, error) {
+	base, err := NewFirehoseBase(authToken)
 	if err != nil {
 		return nil, err
 	}

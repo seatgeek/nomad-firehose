@@ -19,10 +19,11 @@ type Firehose struct {
 	nomadClient      *nomad.Client
 	sink             sink.Sink
 	stopCh           chan struct{}
+	authToken        string
 }
 
 // NewFirehose ...
-func NewFirehose() (*Firehose, error) {
+func NewFirehose(authToken string) (*Firehose, error) {
 	nomadClient, err := nomad.NewClient(nomad.DefaultConfig())
 	if err != nil {
 		return nil, err
@@ -38,6 +39,7 @@ func NewFirehose() (*Firehose, error) {
 		nomadClient:      nomadClient,
 		sink:             sink,
 		lastChangeTimeCh: make(chan interface{}, 1),
+		authToken: authToken,
 	}, nil
 }
 
@@ -126,6 +128,7 @@ func (f *Firehose) watch() {
 		WaitIndex:  uint64(f.lastChangeTime),
 		WaitTime:   5 * time.Minute,
 		AllowStale: true,
+		AuthToken: f.authToken,
 	}
 
 	newMax := uint64(f.lastChangeTime)

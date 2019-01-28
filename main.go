@@ -37,13 +37,24 @@ func main() {
 			Usage:  "json or text",
 			EnvVar: "LOG_FORMAT",
 		},
+		cli.StringFlag{
+			Name:   "auth-token",
+			Value:  "text",
+			Usage:  "nomad acl token",
+			EnvVar: "AUTH_TOKEN",
+		},
 	}
 	app.Commands = []cli.Command{
 		{
 			Name:  "allocations",
 			Usage: "Firehose nomad allocation changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := allocations.NewFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := allocations.NewFirehose(authToken)
 				if err != nil {
 					return err
 				}
@@ -61,7 +72,12 @@ func main() {
 			Name:  "nodes",
 			Usage: "Firehose nomad node changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := nodes.NewFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := nodes.NewFirehose(authToken)
 				if err != nil {
 					return err
 				}
@@ -79,7 +95,12 @@ func main() {
 			Name:  "evaluations",
 			Usage: "Firehose nomad evaluation changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := evaluations.NewFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := evaluations.NewFirehose(authToken)
 				if err != nil {
 					return err
 				}
@@ -97,7 +118,12 @@ func main() {
 			Name:  "jobs",
 			Usage: "Firehose nomad job changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := jobs.NewJobFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := jobs.NewJobFirehose(authToken)
 				if err != nil {
 					return err
 				}
@@ -115,7 +141,12 @@ func main() {
 			Name:  "jobliststubs",
 			Usage: "Firehose nomad job info changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := jobs.NewJobListStubFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := jobs.NewJobListStubFirehose(authToken)
 				if err != nil {
 					return err
 				}
@@ -133,7 +164,12 @@ func main() {
 			Name:  "deployments",
 			Usage: "Firehose nomad deployment changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := deployments.NewFirehose()
+				authToken := ""
+				if c.NArg() > 0 {
+					authToken = c.Args().Get(0)
+				}
+
+				firehose, err := deployments.NewFirehose(authToken)
 				if err != nil {
 					return err
 				}
