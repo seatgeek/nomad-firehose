@@ -159,7 +159,7 @@ func (m *Manager) acquireConsulLeadership() error {
 				return fmt.Errorf("Unknown update type '%T' with value '%+v'", v, v)
 			}
 
-			m.logger.Infof("Writing lastChangedTime to KV: %s", r)
+			m.logger.Debug("Writing lastChangedTime to KV: %s", r)
 			kv := &consulapi.KVPair{
 				Key:   fmt.Sprintf("nomad-firehose/%s.value", m.runner.Name()),
 				Value: []byte(r),
