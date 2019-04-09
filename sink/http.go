@@ -1,9 +1,9 @@
 package sink
 
 import (
+	"bytes"
 	"strconv"
 	"time"
-	"bytes"
 
 	"net/http"
 
@@ -80,7 +80,7 @@ func (s *HttpSink) Stop() {
 }
 
 // Put ..
-func (s *HttpSink) Put(data []byte) error {
+func (s *HttpSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
 	return nil

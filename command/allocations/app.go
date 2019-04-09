@@ -131,7 +131,7 @@ func (f *Firehose) publish(update *AllocationUpdate) {
 		log.Error(err)
 	}
 
-	f.sink.Put(b)
+	f.sink.Put(update.AllocationID, b)
 }
 
 // Continously watch for changes to the allocation list and publish it as updates

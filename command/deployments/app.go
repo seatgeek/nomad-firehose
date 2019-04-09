@@ -117,7 +117,7 @@ func (f *Firehose) Publish(update *nomad.Deployment) {
 		log.Error(err)
 	}
 
-	f.sink.Put(b)
+	f.sink.Put(update.ID, b)
 }
 
 // Continously watch for changes to the deployment list and publish it as updates
