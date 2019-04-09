@@ -37,6 +37,7 @@ type AllocationUpdate struct {
 	TaskStartedAt      *time.Time
 	TaskFinishedAt     *time.Time
 	TaskEvent          *nomad.TaskEvent
+	ModifyTime		   int64
 }
 
 // NewFirehose ...
@@ -165,6 +166,7 @@ func (f *Firehose) watch() {
 
 		// Iterate allocations and find events that have changed since last run
 		for _, allocation := range allocations {
+			has_published := false
 			for taskName, taskInfo := range allocation.TaskStates {
 				for _, taskEvent := range taskInfo.Events {
 					if taskEvent.Time <= f.lastChangeTime {
@@ -192,9 +194,36 @@ func (f *Firehose) watch() {
 						TaskFailed:         taskInfo.Failed,
 						TaskStartedAt:      &taskInfo.StartedAt,
 						TaskFinishedAt:     &taskInfo.FinishedAt,
+						ModifyTime:         allocation.ModifyTime
 					}
 
 					f.publish(payload)
+					has_published = true
+				}
+
+				if !has_published && allocation.ModifyTime >= f.lastChangeTime {
+					payload := &AllocationUpdate{
+						Name:               allocation.Name,
+						NodeID:             allocation.NodeID,
+						AllocationID:       allocation.ID,
+						EvalID:             allocation.EvalID,
+						DesiredStatus:      allocation.DesiredStatus,
+						DesiredDescription: allocation.DesiredDescription,
+						ClientStatus:       allocation.ClientStatus,
+						ClientDescription:  allocation.ClientDescription,
+						JobID:              allocation.JobID,
+						GroupName:          allocation.TaskGroup,
+						TaskName:           taskName,
+						TaskEvent:          nil,
+						TaskState:          taskInfo.State,
+						TaskFailed:         taskInfo.Failed,
+						TaskStartedAt:      &taskInfo.StartedAt,
+						TaskFinishedAt:     &taskInfo.FinishedAt,
+						ModifyTime:         allocation.ModifyTime,
+					}
+
+					f.publish(payload)
+					has_published = true
 				}
 			}
 		}
