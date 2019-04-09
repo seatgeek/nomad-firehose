@@ -10,14 +10,14 @@ import (
 // StdoutSink ...
 type StdoutSink struct {
 	stopCh chan interface{}
-	putCh  chan []byte
+	putCh  chan Data
 }
 
 // NewStdout ...
 func NewStdout() (*StdoutSink, error) {
 	return &StdoutSink{
 		stopCh: make(chan interface{}),
-		putCh:  make(chan []byte, 1000),
+		putCh:  make(chan Data, 1000),
 	}, nil
 }
 
@@ -51,7 +51,7 @@ func (s *StdoutSink) Stop() {
 }
 
 // Put ..
-func (s *StdoutSink) Put(data []byte) error {
-	fmt.Println(string(data))
+func (s *StdoutSink) Put(key string, value []byte) error {
+	fmt.Println(string(value))
 	return nil
 }
