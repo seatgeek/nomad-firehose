@@ -45,13 +45,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := allocations.NewFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
@@ -63,13 +62,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := nodes.NewFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
@@ -81,13 +79,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := evaluations.NewFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
@@ -99,13 +96,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := jobs.NewJobFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
@@ -117,13 +113,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := jobs.NewJobListStubFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
@@ -135,13 +130,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				firehose, err := deployments.NewFirehose()
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				manager := helper.NewManager(firehose)
 				if err := manager.Start(); err != nil {
 					log.Fatal(err)
-					return err
 				}
 
 				return nil
