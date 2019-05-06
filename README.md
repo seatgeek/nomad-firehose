@@ -78,22 +78,25 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `kafka`
 - `mongo`
 - `stdout`
+- `syslog`
 
-The `amqp` sink is configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE` and `$SINK_AMQP_ROUTING_KEY`, `$SINK_AMQP_WORKERS` (default: `1`) environment variables.
+The `amqp` and `rabbitmq` sinks are configured using `$SINK_AMQP_CONNECTION` (`amqp://guest:guest@127.0.0.1:5672/`), `$SINK_AMQP_EXCHANGE`, `$SINK_AMQP_ROUTING_KEY`, and `$SINK_AMQP_WORKERS` (default: `1`) environment variables.
+
+The `http` sink is configured using `$SINK_HTTP_ADDRESS` (`localhost:8080/allocations`)` environment variable.
+
+The `kafka` sink is configured using `$SINK_KAFKA_BROKERS` (`kafka1:9092,kafka2:9092,kafka3:9092`), and `$SINK_KAFKA_TOPIC` environment variables.
 
 The `kinesis` sink is configured using `$SINK_KINESIS_STREAM_NAME` and `$SINK_KINESIS_PARTITION_KEY` environment variables.
+
+The `mongo` sink is configured using `$SINK_MONGODB_CONNECTION` (`mongodb://localhost:27017/`), `$SINK_MONGODB_DATABASE` and `$SINK_MONGODB_COLLECTION` environment variables.
 
 The `nsq` sink is configured using `$SINK_NSQ_ADDR` and `$SINK_NSQ_TOPIC_NAME` environment variables.
 
 The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[password]@127.0.0.1[:5672]/0`) and `$SINK_REDIS_KEY` environment variables.
 
-The `kafka` sink is configured using `$SINK_KAFKA_BROKERS` (`kafka1:9092,kafka2:9092,kafka3:9092`), and `$SINK_KAFKA_TOPIC` environment variables.
-
-The `mongo` sink is configured using `$SINK_MONGODB_CONNECTION` (`mongodb://localhost:27017/`), `$SINK_MONGODB_DATABASE` and `$SINK_MONGODB_COLLECTION` environment variables.
-
-The `http` sink is configured using `$SINK_HTTP_ADDRESS` (`localhost:8080/allocations`)` environment variable.
-
 The `stdout` sink does not have any configuration, it will simply output the JSON to stdout for debugging.
+
+The `syslog` sink is configured using `$SINK_SYSLOG_PROTO` (e.g. `tcp`, `udp` - leave empty if logging to a local syslog socket), `$SINK_SYSLOG_ADDR` (e.g. `127.0.0.1:514` - leave empty if logging to a local syslog socket), and `$SINK_SYSLOG_TAG` (default: `nomad-firehose`).
 
 ### `allocations`
 
