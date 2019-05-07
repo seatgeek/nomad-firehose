@@ -16,9 +16,19 @@ env:
   global:
     - CGO_ENABLED=0
     - GOBUILD="linux-amd64 windows-amd64 darwin-amd64"
+    - secure: "LRLyC0QgD1twHWmYR4ppX/Ds6K2/1x+gLy0vuRzCmfd8NcPf0mbqx3e9spETLcYzOnoL25FCCLSQoeKlhHLQx9iAmXe7KA825WnaGiOBwYjXo9X2Y+nFlwf+h3QtR28y1EhbKlGFT8UPZxKUGuy9xemjjqUo8DVxcj77VTreTdUbGaIWXZjBPjA/md7t7bnTzCe3q79j+KFvq6S84dNdZaRXBO1M4MpnH/4JlvDVp8k+hEEg+Dp3ru0JayRgbMdfHGTMuia/BmMJqBpVeGaf/GraGAeJwGsQdbo65AXrySovwn+u22mFN2Hv36IE/66Rs/AkPY/BdDbKNDPHSv1vIIJbRh6HSnro6ZVX+XyOG1nFd4BhDRY6AhNDphNro7olvIyG4krw5q72uAy9n+fbHH8A5ZeQ6Nk4iu9JnVOBtWoomisdlHov8ljlbiAGCUtyjR6iJVc8Z1xZaCCw+XBK21YIAE2tPjcuTkZnCf4EXM2Al/VlINCal32DBFB+HC8x/WqGPon/qcBMfw3gi6cFEUFY7farZBT5sl6S7IqNLKeLO6ZkU2maOnhQoek0o8DxJQf+/1MwT54RMMu2zpj5KLO4CnXIJy3hqiUKWhJN9mOIRz7DtjP90Qx1AHrgmkUFGxFq53xwbxrvfT7cZ0NqkxRLQ3INewuNxKjxO9TcX6E="
+    - secure: "ETF+/7ajz108xX2OPds+uFiJQKQoKIs/jiOuo9OLbyS6SeGmqlu5ogO+qnOjbMwt9phmIBWP9O7HGo4xpO6jDg5bR5GR8MoUEXss+pP1eigDE5T+wJVrW15YRHv3nbCj6nOtMzI0wiPDdfJxa1DAPc1cAVDA9wqaSu0JC519Ox/dVPDUxpXVlkeI2BoLPNpfjNXYkL3jnKJq5JeIA6ZtCFvKSw9jaCldCA906h5JW5KHLRdH27SM9fI/dL8hQ3obTylSAM8lDhTtD1kW4+kXrDLEUplH3t72/2ViOyzrlq7o2PbAhtJwtM4pIGZOZMyHkP9G5SI8EFf8/kZ2UzGTzteL3kk6g6vXgnHyNBC1IMWXSlWtY9Ti8M0Icx88DlAWVENW9I0zVElJBeUPRSkH08Qt77DIBhmS+rwCpGIGNtNep87qtOSXHXyEXu9ibQiGeujHZ3SO5QF7uBcHgAkFnerxjsr5cfzVVJBFP13BNcRERSlSQBLmXTUIs/loVG6qSN/1wjNM5rPRVTVpIh3IR3o6ZlNDyNgr7KOvtMb1obQdTsqoG57H1NsU7TblKmffe1Unh8+EheiG42TAfG1zPphyk0q83JUqIE9JrWu/UfDEknnuty0T6kVCfzGfjkM5kF9KqfW9b8/ndxLJV8Fv25Y7okcPaoZ5WHRiASRUe0o="
+
 script:
   - GOBUILD=${GOBUILD} make -j dist
   - ls -la build
+
+after_success:
+  - export PR=https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST
+  - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo `curl -s $PR | jq -r .head.ref`; fi)
+  - if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then make -j docker DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS TAG=pr-$TRAVIS_PULL_REQUEST COMMIT=$TRAVIS_COMMIT; fi
+  - if [[ "$TRAVIS_TAG" =~ ^v.*$ ]]; then make -j docker DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS TAG=$TRAVIS_TAG COMMIT=$TRAVIS_COMMIT; fi
+  - if [[ "$BRANCH" == "master" ]]; then make -j docker DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS TAG=latest COMMIT=$TRAVIS_COMMIT; fi
 
 deploy:
   provider: releases

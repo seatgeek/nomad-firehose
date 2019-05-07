@@ -52,3 +52,11 @@ $(BINARIES): $(BUILD_DIR)/nomad-firehose-%: $(BUILD_DIR)
 dist: install fmt vet
 	@echo "=> building ..."
 	$(MAKE) -j $(BINARIES)
+
+.PHONY: docker
+docker:
+	@echo "=> build and push Docker image ..."
+	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
+	docker build -f Dockerfile -t seatgeek/nomad-firehose:$(COMMIT) .
+	docker tag seatgeek/nomad-firehose:$(COMMIT) seatgeek/nomad-firehose:$(TAG)
+	docker push seatgeek/nomad-firehose:$(TAG)
