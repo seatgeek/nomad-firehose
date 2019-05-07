@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"time"
 
 	consulapi "github.com/hashicorp/consul/api"
@@ -20,11 +21,16 @@ type Runner interface {
 }
 
 func NewManager(r Runner) *Manager {
+	consulPrefix := "nomad-firehose"
+	if v, ok := os.LookupEnv("NOMAD_FIREHOSE_CONSUL_PREFIX"); ok {
+		consulPrefix = strings.TrimSuffix(v, "/")
+	}
 	return &Manager{
 		runner: r,
 		logger: log.WithField("type", r.Name()),
 		stopCh: make(chan interface{}),
 		voluntarilyReleaseLockCh: make(chan interface{}),
+		prefix: consulPrefix,
 	}
 }
 
@@ -35,6 +41,7 @@ type Manager struct {
 	lockCh                   <-chan struct{}  // lock channel used by Consul SDK to notify about changes
 	lockErrorCh              <-chan struct{}  // lock error channel used by Consul SDK to notify about errors related to the lock
 	logger                   *log.Entry       // logger for the consul connection struct
+	prefix                   string           // Consul KV prefix to write state to
 	stopCh                   chan interface{} // internal channel used to stop all go-routines when gracefully shutting down
 	voluntarilyReleaseLockCh chan interface{}
 }
@@ -76,7 +83,7 @@ func (m *Manager) continuouslyAcquireConsulLeadership() error {
 
 // Read the Last Change Time from Consul KV, so we don't re-process tasks over and over on restart
 func (m *Manager) restoreLastChangeTime() interface{} {
-	kv, _, err := m.client.KV().Get(fmt.Sprintf("nomad-firehose/%s.value", m.runner.Name()), nil)
+	kv, _, err := m.client.KV().Get(fmt.Sprintf("%s/%s.value", m.prefix, m.runner.Name()), nil)
 	if err != nil {
 		return 0
 	}
@@ -102,7 +109,7 @@ func (m *Manager) restoreLastChangeTime() interface{} {
 func (m *Manager) acquireConsulLeadership() error {
 	var err error
 	m.lock, err = m.client.LockOpts(&consulapi.LockOptions{
-		Key:              fmt.Sprintf("nomad-firehose/%s.lock", m.runner.Name()),
+		Key:              fmt.Sprintf("%s/%s.lock", m.prefix, m.runner.Name()),
 		SessionName:      fmt.Sprintf("nomad-firehose-%s", m.runner.Name()),
 		MonitorRetries:   10,
 		MonitorRetryTime: 5 * time.Second,
@@ -161,7 +168,7 @@ func (m *Manager) acquireConsulLeadership() error {
 
 			m.logger.Debug("Writing lastChangedTime to KV: %s", r)
 			kv := &consulapi.KVPair{
-				Key:   fmt.Sprintf("nomad-firehose/%s.value", m.runner.Name()),
+				Key:   fmt.Sprintf("%s/%s.value", m.prefix, m.runner.Name()),
 				Value: []byte(r),
 			}
 			_, err := m.client.KV().Put(kv, nil)
