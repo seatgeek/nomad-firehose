@@ -57,10 +57,28 @@ func main() {
 			},
 		},
 		{
+			Name:  "nodeliststubs",
+			Usage: "Firehose nomad node stub changes",
+			Action: func(c *cli.Context) error {
+				firehose, err := nodes.NewNodeListStubFirehose()
+				if err != nil {
+					return err
+				}
+
+				manager := helper.NewManager(firehose)
+				if err := manager.Start(); err != nil {
+					log.Fatal(err)
+					return err
+				}
+
+				return nil
+			},
+		},
+		{
 			Name:  "nodes",
 			Usage: "Firehose nomad node changes",
 			Action: func(c *cli.Context) error {
-				firehose, err := nodes.NewFirehose()
+				firehose, err := nodes.NewNodeFirehose()
 				if err != nil {
 					log.Fatal(err)
 				}
