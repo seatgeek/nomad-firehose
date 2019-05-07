@@ -1,13 +1,12 @@
 FROM golang:1.11-alpine
 
 # Adding ca-certificates for external communication and git for dep installation
-RUN apk add --update ca-certificates git \
-    && rm -rf /var/cache/apk/*
+RUN apk add --update ca-certificates git && rm -rf /var/cache/apk/*
 
 RUN go get -u github.com/golang/dep/cmd/dep
 WORKDIR /go/src/github.com/seatgeek/nomad-firehose/
 COPY . /go/src/github.com/seatgeek/nomad-firehose/
-RUN dep ensure
+RUN dep ensure -vendor-only
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o build/nomad-firehose -ldflags "-X main.GitCommit=$(git describe --tags)"
 
 FROM alpine:latest
