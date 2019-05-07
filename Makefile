@@ -15,11 +15,11 @@ $(BUILD_DIR):
 .PHONY: install
 install:
 	go get -u github.com/golang/dep/cmd/dep
-	dep ensure
+	dep ensure -vendor-only
 
 .PHONY: build
 build: install
-	dep ensure
+	dep ensure -vendor-only
 	go install
 
 .PHONY: fmt
