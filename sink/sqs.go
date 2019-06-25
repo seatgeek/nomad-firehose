@@ -25,18 +25,27 @@ type SQSSink struct {
 
 // NNewSQS ...
 func NewSQS(groupId string) (*SQSSink, error) {
-	queueName := os.Getenv("SINK_SQS_QUEUE_URL")
+	queueName := os.Getenv("SINK_SQS_QUEUE_NAME")
+
 	if queueName == "" {
-		return nil, fmt.Errorf("[sink/sqs] Missing SINK_SQS_QUEUE_URL")
+		return nil, fmt.Errorf("[sink/sqs] Missing SINK_SQS_QUEUE_NAME")
 	}
 
 	sess := session.Must(session.NewSession())
 	svc := sqs.New(sess)
 
+	output, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: aws.String(queueName),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find queue: %s", err)
+	}
+
 	return &SQSSink{
 		session:   sess,
 		sqs:       svc,
-		queueName: queueName,
+		queueName: *output.QueueUrl,
 		groupId:   groupId,
 		stopCh:    make(chan interface{}),
 		putCh:     make(chan []byte, 1000),
