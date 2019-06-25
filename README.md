@@ -101,7 +101,7 @@ The `stdout` sink does not have any configuration, it will simply output the JSO
 
 The `syslog` sink is configured using `$SINK_SYSLOG_PROTO` (e.g. `tcp`, `udp` - leave empty if logging to a local syslog socket), `$SINK_SYSLOG_ADDR` (e.g. `127.0.0.1:514` - leave empty if logging to a local syslog socket), and `$SINK_SYSLOG_TAG` (default: `nomad-firehose`).
 
-The `sqs` sink is configured using `$SINK_SQS_QUEUE_URL_` which should point to the queue URL provided by AWS.
+The `sqs` sink is configured using `$SINK_SQS_QUEUE_URL` which should point to the queue URL provided by AWS. This queue is expected to be a FIFO queue.
 
 ### `allocations`
 
