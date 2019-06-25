@@ -79,6 +79,7 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `redis`
 - `kafka`
 - `mongo`
+- `sqs`
 - `stdout`
 - `syslog`
 
@@ -99,6 +100,8 @@ The `redis` sink is configured using `$SINK_REDIS_URL` (`redis://[user]:[passwor
 The `stdout` sink does not have any configuration, it will simply output the JSON to stdout for debugging.
 
 The `syslog` sink is configured using `$SINK_SYSLOG_PROTO` (e.g. `tcp`, `udp` - leave empty if logging to a local syslog socket), `$SINK_SYSLOG_ADDR` (e.g. `127.0.0.1:514` - leave empty if logging to a local syslog socket), and `$SINK_SYSLOG_TAG` (default: `nomad-firehose`).
+
+The `sqs` sink is configured using `$SINK_SQS_QUEUE_URL_` which should point to the queue URL provided by AWS.
 
 ### `allocations`
 

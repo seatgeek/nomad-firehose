@@ -18,7 +18,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:6cbbd969290c2cae19230c8699b9dc12bb3e9a2ea10ef944730d2dfe0054767d"
+  digest = "1:6758d9fca11963e75f04dd513bfbae49994f7cdd0d4af8f0339ba4ff4540fcfb"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -51,6 +51,7 @@
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/kinesis",
+    "service/sqs",
     "service/sts",
   ]
   pruneopts = "UT"
@@ -489,6 +490,7 @@
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/kinesis",
+    "github.com/aws/aws-sdk-go/service/sqs",
     "github.com/garyburd/redigo/redis",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/nomad/api",
