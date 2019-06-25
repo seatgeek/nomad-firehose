@@ -41,7 +41,7 @@ func NewSQS(groupId string) (*SQSSink, error) {
 		queueName: queueName,
 		groupId:   groupId,
 		stopCh:    make(chan interface{}),
-		putCh:     make(chan []byte, 10000),
+		putCh:     make(chan []byte, 1000),
 		batchCh:   make(chan [][]byte, 100),
 	}, nil
 }
@@ -82,8 +82,6 @@ func (s *SQSSink) Stop() {
 func (s *SQSSink) Put(data []byte) error {
 	s.putCh <- data
 
-	log.Infof("[sink/sqs] (%d messages left)", len(s.putCh))
-
 	return nil
 }
 
@@ -94,24 +92,14 @@ func (s *SQSSink) batch() {
 	for {
 		select {
 		case data := <-s.putCh:
+			buffer = append(buffer, data)
+
 			if len(buffer) == 10 {
 				s.batchCh <- buffer
 				buffer = make([][]byte, 0)
 			}
 
-			buffer = append(buffer, data)
-
 		case _ = <-ticker.C:
-
-			// If we had any accumulated messages from the ticker, drop them
-			for {
-				if len(ticker.C) > 0 {
-					_ = <-ticker.C
-				} else {
-					break
-				}
-			}
-
 			// If there is anything else in the putCh, wait a little longer
 			if len(s.putCh) > 0 {
 				continue
@@ -121,7 +109,6 @@ func (s *SQSSink) batch() {
 				s.batchCh <- buffer
 				buffer = make([][]byte, 0)
 			}
-
 		}
 	}
 }
