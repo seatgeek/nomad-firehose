@@ -46,7 +46,7 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	sink, err := sink.GetSink()
+	sink, err := sink.GetSink("allocations")
 	if err != nil {
 		return nil, err
 	}

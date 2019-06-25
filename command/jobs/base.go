@@ -9,9 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 type WatchJobListFunc func(job *nomad.JobListStub)
-
 
 // Firehose ...
 type FirehoseBase struct {
@@ -29,7 +27,7 @@ func NewFirehoseBase() (*FirehoseBase, error) {
 		return nil, err
 	}
 
-	sink, err := sink.GetSink()
+	sink, err := sink.GetSink("jobs")
 	if err != nil {
 		return nil, err
 	}

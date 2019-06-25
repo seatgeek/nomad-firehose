@@ -27,7 +27,7 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	sink, err := sink.GetSink()
+	sink, err := sink.GetSink("evaluations")
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

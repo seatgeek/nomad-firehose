@@ -26,7 +26,7 @@ func NewFirehose() (*Firehose, error) {
 		return nil, err
 	}
 
-	sink, err := sink.GetSink()
+	sink, err := sink.GetSink("nodes")
 	if err != nil {
 		return nil, err
 	}
