@@ -89,7 +89,7 @@ func (s *SQSSink) Put(data []byte) error {
 
 func (s *SQSSink) batch() {
 	buffer := make([][]byte, 0)
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(1 * time.Second)
 
 	for {
 		select {
