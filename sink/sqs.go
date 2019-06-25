@@ -1,12 +1,10 @@
 package sink
 
 import (
+	"fmt"
+	"os"
 	"strconv"
 	"time"
-
-	"os"
-
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
