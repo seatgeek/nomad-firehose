@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -143,10 +144,15 @@ func (s *SQSSink) write() {
 				id = id + 1
 			}
 
-			_, err := s.sqs.SendMessageBatch(&sqs.SendMessageBatchInput{
-				Entries:  entries,
-				QueueUrl: aws.String(s.queueName),
-			})
+			err := s.sendBatch(entries)
+			if err != nil && strings.Contains(err.Error(), "AWS.SimpleQueueService.BatchRequestTooLong") {
+				for i := 0; i < len(entries); i += i {
+					err = s.sendBatch([]*sqs.SendMessageBatchRequestEntry{entries[i]})
+					if err != nil {
+						log.Errorf("[sink/sqs] %s", err)
+					}
+				}
+			}
 
 			if err != nil {
 				log.Errorf("[sink/sqs] %s", err)
@@ -155,4 +161,13 @@ func (s *SQSSink) write() {
 			}
 		}
 	}
+}
+
+func (s *SQSSink) sendBatch(entries []*sqs.SendMessageBatchRequestEntry) error {
+	_, err := s.sqs.SendMessageBatch(&sqs.SendMessageBatchInput{
+		Entries:  entries,
+		QueueUrl: aws.String(s.queueName),
+	})
+
+	return err
 }
