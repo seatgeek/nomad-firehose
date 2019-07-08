@@ -149,9 +149,13 @@ func (s *SQSSink) write() {
 				for i := 0; i < len(entries); i += i {
 					err = s.sendBatch([]*sqs.SendMessageBatchRequestEntry{entries[i]})
 					if err != nil {
-						log.Errorf("[sink/sqs] %s", err)
+						log.Errorf("[sink/sqs] Retry failed for %d: %s", i, err)
+					} else {
+						log.Infof("[sink/sqs] Retry succeeded for %d", i)
 					}
 				}
+
+				continue
 			}
 
 			if err != nil {
