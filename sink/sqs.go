@@ -146,8 +146,8 @@ func (s *SQSSink) write() {
 
 			err := s.sendBatch(entries)
 			if err != nil && strings.Contains(err.Error(), "AWS.SimpleQueueService.BatchRequestTooLong") {
-				for i := 0; i < len(entries); i += i {
-					err = s.sendBatch([]*sqs.SendMessageBatchRequestEntry{entries[i]})
+				for i, el := range entries {
+					err = s.sendBatch([]*sqs.SendMessageBatchRequestEntry{el})
 					if err != nil {
 						log.Errorf("[sink/sqs] Retry failed for %d: %s", i, err)
 					} else {
