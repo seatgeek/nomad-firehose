@@ -38,7 +38,7 @@ func createTlsConfiguration() (t *tls.Config) {
 		caCertPool.AppendCertsFromPEM(caCert)
 
 		t = &tls.Config{
-			RootCAs:            caCertPool,
+			RootCAs: caCertPool,
 		}
 	}
 
