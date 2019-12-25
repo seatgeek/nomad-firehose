@@ -356,12 +356,12 @@
   version = "v0.0.17"
 
 [[projects]]
-  digest = "1:bb48459ec76efe45f13094480296462ef5c9aaa56662918819b7a8fce3155b8b"
+  digest = "1:a20520c30001f1d49ca07e26eafe5d8612ce5d7dac5abbdab754e14bb83c1b4e"
   name = "github.com/nsqio/go-nsq"
   packages = ["."]
   pruneopts = "UT"
-  revision = "eee57a3ac4174c55924125bb15eeeda8cffb6e6f"
-  version = "v1.0.7"
+  revision = "d7acddb4babdf3329ad415cc02b605a239011b4b"
+  version = "v1.0.8"
 
 [[projects]]
   digest = "1:e39a5ee8fcbec487f8fc68863ef95f2b025e0739b0e4aa55558a2b4cf8f0ecf0"
