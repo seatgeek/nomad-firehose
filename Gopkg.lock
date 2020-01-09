@@ -399,11 +399,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:68284c262f45718a220f7e817c2125a0f20eb3924be5074fa187ff7bc600c47e"
+  digest = "1:5ca236e4ecfeb92a57b7a4c7f139023384e7f726640f61b17820473cc82dfb77"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "27835f1a64e97101d95306211f03c0620ffa295d"
+  revision = "1c71cc93ed716f9a6f4c2ae8955c25f9176d9f19"
 
 [[projects]]
   digest = "1:420eec79669470df8c45f18c2d41da99d1d95a154bbde6d1682af7429b5681db"
