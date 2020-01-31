@@ -131,20 +131,20 @@
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:e62657cca9badaa308d86e7716083e4c5933bb78e30a17743fc67f50be26f6f4"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b"
+  version = "v1.4.1"
+
+[[projects]]
   digest = "1:662f988f80b8e4208a0004d1e9d67543602fdd00b7106a857b8339e3d276ae1e"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   pruneopts = "UT"
   revision = "e8757838a49feeb682c7e6ad6b78694a78b2096b"
   version = "v1.3.0"
-
-[[projects]]
-  digest = "1:0ade334594e69404d80d9d323445d2297ff8161637f9b2d347cc6973d2d6f05b"
-  name = "github.com/hashicorp/errwrap"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "8a6fb523712970c966eefc6b39ed2c5e74880354"
-  version = "v1.0.0"
 
 [[projects]]
   digest = "1:77cb3be9b21ba7f1a4701e870c84ea8b66e7d74c7c8951c58155fdadae9414ec"
@@ -162,21 +162,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b8ba23b0b493e601d5ebaf21079bd3433eb304a5d73c0fb40b8aea526e94f46b"
-  name = "github.com/hashicorp/go-msgpack"
-  packages = ["codec"]
-  pruneopts = "UT"
-  revision = "fa3f63826f7c23912c15263591e65d54d080b458"
-
-[[projects]]
-  digest = "1:9e6e28e4a4a21fc0e3448a519ac1b1979d03c9cb15ceeee0004e5912cf37f763"
-  name = "github.com/hashicorp/go-multierror"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5"
-
-[[projects]]
-  branch = "master"
   digest = "1:45aad874d3c7d5e8610427c81870fb54970b981692930ec2a319ce4cb89d7a00"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
@@ -184,62 +169,22 @@
   revision = "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
 
 [[projects]]
-  digest = "1:826df03282c5a336f1d23a07ce0ec0a26c7230e1a5d5a79a8ea4b68c0c8462b3"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "03c5bf6be031b6dd45afec16b1cf94fc8938bc77"
-
-[[projects]]
-  digest = "1:3f90d23757c18b1e07bf11494dbe737ee2c44d881c0f41e681611abdadad62fa"
+  digest = "1:5d92c57ce21be49fd39c14401b7d59277756f3ea1aa9875ed374ab8990531224"
   name = "github.com/hashicorp/golang-lru"
-  packages = [
-    ".",
-    "simplelru",
-  ]
+  packages = ["simplelru"]
   pruneopts = "UT"
   revision = "a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4"
 
 [[projects]]
-  digest = "1:1569ecaa0d58425d100322dadc429ff1ec0999876067088eac6f62d1073d7f10"
-  name = "github.com/hashicorp/hcl"
-  packages = [
-    ".",
-    "hcl/ast",
-    "hcl/parser",
-    "hcl/scanner",
-    "hcl/strconv",
-    "hcl/token",
-    "json/parser",
-    "json/scanner",
-    "json/token",
-  ]
-  pruneopts = "UT"
-  revision = "6e968a3fcdcbab092f5307fd0d85479d5af1e4dc"
-
-[[projects]]
-  digest = "1:4ea1ee0830819ed2e8f1bf072d1f43573f1cbf56b906a65ffc345a814b1b6ccb"
+  digest = "1:dcd81e08b96ab97f4ab27a06822966e196e3d11a141539ad0e5b044d7d6090e6"
   name = "github.com/hashicorp/nomad"
   packages = [
-    "acl",
     "api",
     "api/contexts",
-    "helper",
-    "helper/args",
-    "helper/flatmap",
-    "helper/uuid",
-    "nomad/structs",
   ]
   pruneopts = "UT"
-  revision = "fcc4149c55399eb4979cd3fe3fb983cfe6c8449a"
-  version = "v0.8.6"
-
-[[projects]]
-  digest = "1:8f7bdcbd3c824bf5118d22f3e4b44dbcbf2db86fdd5a6d028ac89eabc09f518d"
-  name = "github.com/hashicorp/raft"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "077966dbc90f342107eb723ec52fdb0463ec789b"
+  revision = "74e08d5af48918120c48a74b44d0860905770b82"
+  version = "v0.10.3"
 
 [[projects]]
   digest = "1:acc81e4e4289587b257ccdfccbc6eaf16d4c2fb57dda73c6bb349bf50f02501f"
@@ -256,13 +201,6 @@
   revision = "c2b33e84"
 
 [[projects]]
-  digest = "1:dfb4eb6168a4e7f16e9fda5b9164013a0f5a8eb06bb5ca3a1980964a7beedde4"
-  name = "github.com/mitchellh/copystructure"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "d23ffcb85de31694d6ccaa23ccb4a03e55c1303f"
-
-[[projects]]
   digest = "1:78bbb1ba5b7c3f2ed0ea1eab57bdd3859aec7e177811563edc41198a760b06af"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
@@ -271,26 +209,11 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:7ca97256ce83a55a1b54d87408b8975d4062a4ed14fa38cefadd4a8c8b03b22b"
-  name = "github.com/mitchellh/hashstructure"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "1ef5c71b025aef149d12346356ac5973992860bc"
-
-[[projects]]
   digest = "1:bba69fe95a60f59a68df402c23d57ffdc5596200901189958aea969c468d550f"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   pruneopts = "UT"
   revision = "5a380f224700b8a6c4eaad048804f5bff514cb35"
-
-[[projects]]
-  digest = "1:bcc07ad6f62e6d8958692ff89c8ac1c64eb92de66330f98b7e9bdb72cc017a84"
-  name = "github.com/mitchellh/reflectwalk"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "eecee6c969c02c8cc2ae48e1e269843ae8590796"
-  version = "v1.0.0"
 
 [[projects]]
   digest = "1:e3492bfc9acbe6e04b51fe36220f9aea8c919885632f0de55685db80c0029844"
@@ -406,13 +329,6 @@
   revision = "27835f1a64e97101d95306211f03c0620ffa295d"
 
 [[projects]]
-  digest = "1:420eec79669470df8c45f18c2d41da99d1d95a154bbde6d1682af7429b5681db"
-  name = "github.com/ugorji/go"
-  packages = ["codec"]
-  pruneopts = "UT"
-  revision = "0053ebfd9d0ee06ccefbfe17072021e1d4acebee"
-
-[[projects]]
   digest = "1:8e214e348491ae6a1a79c5bb728ed4eca7f1a2892cd66ad11f46558d684333f4"
   name = "github.com/xdg/scram"
   packages = ["."]
@@ -429,12 +345,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7465b577175e95c0d368c60c10f6e921907fdfe23bcdc7e8452f69a62edd74ac"
+  digest = "1:f92f6956e4059f6a3efc14924d2dd58ba90da25cc57fe07ae3779ef2f5e0c5f2"
   name = "golang.org/x/crypto"
-  packages = [
-    "blake2b",
-    "pbkdf2",
-  ]
+  packages = ["pbkdf2"]
   pruneopts = "UT"
   revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
 
@@ -455,12 +368,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e9609f7e36a3fecb7dc9e3a15f9881011f9d8c42f94c9d5da231eb0c07826dc8"
+  digest = "1:7ba061af4131fb44b30448572acd0d6fefbf63a61b97b7ef1dea0be5871c2742"
   name = "golang.org/x/sys"
-  packages = [
-    "cpu",
-    "unix",
-  ]
+  packages = ["unix"]
   pruneopts = "UT"
   revision = "66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399"
 
