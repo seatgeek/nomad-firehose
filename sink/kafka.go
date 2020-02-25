@@ -70,6 +70,12 @@ func NewKafka() (*KafkaSink, error) {
 		config.Net.TLS.Enable = true
 	}
 
+	// To enable in transing tls
+	enableTLS := os.Getenv("SINK_KAFKA_ENABLE_TLS")
+	if enableTLS == "true" {
+		config.Net.TLS.Enable = true
+	}
+
 	user := os.Getenv("SINK_KAFKA_USER")
 	if user != "" {
 		password := os.Getenv("SINK_KAFKA_PASSWORD")
