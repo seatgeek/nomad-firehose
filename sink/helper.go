@@ -35,6 +35,8 @@ func GetSink(resourceName string) (Sink, error) {
 		return NewSyslog()
 	case "sqs":
 		return NewSQS(resourceName)
+	case "sns":
+		return NewSNS()
 	default:
 		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, http, kafka, kinesis, mongodb, nsq, rabbitmq, redis, sqs, stdout, syslog", sinkType)
 	}
