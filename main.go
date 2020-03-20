@@ -155,6 +155,16 @@ func main() {
 			log.SetFormatter(&log.JSONFormatter{})
 		}
 
+		if c.String("log-format") == "seatgeek-json" {
+			log.SetFormatter(&log.JSONFormatter{
+				FieldMap: log.FieldMap{
+					log.FieldKeyTime:  "@timestamp",
+					log.FieldKeyLevel: "@level",
+					log.FieldKeyMsg:   "@message",
+				},
+			})
+		}
+
 		if c.String("log-format") == "gelf" {
 			log.SetFormatter(&gelf.GelfFormatter{})
 		}

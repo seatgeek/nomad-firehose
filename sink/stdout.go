@@ -43,7 +43,7 @@ func (s *StdoutSink) Stop() {
 	log.Infof("[sink/stdout] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/stdout] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/stdout] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 

@@ -89,7 +89,7 @@ func (s *RabbitmqSink) Stop() {
 	log.Infof("[sink/amqp] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/amqp] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/amqp] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 

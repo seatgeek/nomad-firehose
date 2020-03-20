@@ -75,7 +75,7 @@ func (s *KinesisSink) Stop() {
 	log.Infof("[sink/kinesis] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/kinesis] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/kinesis] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 

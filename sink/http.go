@@ -1,9 +1,9 @@
 package sink
 
 import (
+	"bytes"
 	"strconv"
 	"time"
-	"bytes"
 
 	"net/http"
 
@@ -72,7 +72,7 @@ func (s *HttpSink) Stop() {
 	log.Infof("[sink/http] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/http] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/http] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 

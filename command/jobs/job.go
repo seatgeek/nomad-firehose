@@ -22,7 +22,6 @@ func NewJobFirehose() (*JobFirehose, error) {
 	return &JobFirehose{FirehoseBase: *base}, nil
 }
 
-
 func (f *JobFirehose) Name() string {
 	return "jobs"
 }
@@ -36,7 +35,6 @@ func (f *JobFirehose) Publish(update *nomad.Job) {
 
 	f.sink.Put(b)
 }
-
 
 func (f *JobFirehose) Start() {
 	f.FirehoseBase.Start(f.watchJobList)

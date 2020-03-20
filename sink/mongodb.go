@@ -7,8 +7,8 @@ import (
 
 	"os"
 
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
@@ -61,7 +61,6 @@ func NewMongodb() (*MongodbSink, error) {
 		return nil, fmt.Errorf("[sink/mongodb] failed to connect to string: %s", err)
 	}
 
-
 	return &MongodbSink{
 		conn:        conn,
 		database:    database,
@@ -98,7 +97,7 @@ func (s *MongodbSink) Stop() {
 	log.Infof("[sink/mongodb] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/mongodb] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/mongodb] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 
