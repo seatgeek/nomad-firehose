@@ -1,9 +1,9 @@
 package sink
 
 import (
+	"bytes"
 	"strconv"
 	"time"
-	"bytes"
 
 	"net/http"
 

@@ -5,58 +5,56 @@ GET_GOOS   		 = $(word 1,$(subst -, ,$1))
 GOBUILD   		?= $(shell go env GOOS)-$(shell go env GOARCH)
 GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 VETARGS? 		 =-all
-GIT_COMMIT := $(shell git describe --tags)
-GIT_DIRTY := $(if $(shell git status --porcelain),+CHANGES)
-GO_LDFLAGS := "-X main.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
+GIT_COMMIT 		:= $(shell git describe --tags)
+GIT_DIRTY 		:= $(if $(shell git status --porcelain),+CHANGES)
+GO_LDFLAGS 		:= "-X main.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
 
 $(BUILD_DIR):
 	mkdir -p $@
 
-.PHONY: install
-install:
-	go get -u github.com/golang/dep/cmd/dep
-	dep ensure -vendor-only
+# Install all go dependencies via "go get". Will use the "go.mod / go.sum" files automatically
+.PHONY: dependencies
+dependencies:
+	@echo "==> go mod download"
+	@go mod download
 
-.PHONY: build
-build: install
-	dep ensure -vendor-only
-	go install
-
-.PHONY: fmt
-fmt:
-	@echo "=> Running go fmt" ;
-	@if [ -n "`go fmt ${GOFILES_NOVENDOR}`" ]; then \
-		echo "[ERR] go fmt updated formatting. Please commit formatted code first."; \
-		exit 1; \
-	fi
-
-.PHONY: vet
-vet: fmt
-	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
-		go get golang.org/x/tools/cmd/vet; \
-	fi
-
-	@echo "=> Running go tool vet $(VETARGS) ${GOFILES_NOVENDOR}"
-	@go tool vet $(VETARGS) ${GOFILES_NOVENDOR} ; if [ $$? -eq 1 ]; then \
-		echo ""; \
-		echo "[LINT] Vet found suspicious constructs. Please check the reported constructs"; \
-		echo "and fix them if necessary before submitting the code for review."; \
-	fi
-
+# Create pseudo Make target for all cmd/ (or GOBUILD) provided
+# allow for "make cache_primer" to work automatically
 BINARIES = $(addprefix $(BUILD_DIR)/nomad-firehose-, $(GOBUILD))
-$(BINARIES): $(BUILD_DIR)/nomad-firehose-%: $(BUILD_DIR)
-	@echo "=> building $@ ..."
+$(BINARIES): $(BUILD_DIR)/nomad-firehose-%: $(BUILD_DIR) dependencies
+	@echo "==> building $@ ..."
 	GOOS=$(call GET_GOOS,$*) GOARCH=$(call GET_GOARCH,$*) CGO_ENABLED=0 go build -o $@ -ldflags $(GO_LDFLAGS)
 
-.PHONY: dist
-dist: install fmt vet
-	@echo "=> building ..."
-	$(MAKE) -j $(BINARIES)
+# Build all binaries (or APP_SERVER_NAME) and write to the BIN_DIR/
+.PHONY: build
+build:
+	@$(MAKE) -j $(BINARIES)
 
-.PHONY: docker
-docker:
+# Format go source code
+.PHONY: fmt
+fmt:
+	gofmt -w .
+
+# Run full test suite
+.PHONY: test
+test: dependencies
+	@echo "==> go test"
+	@go test -v -covermode=count ./...
+
+# Build local Dockerfile
+.PHONY: docker-build
+docker-build:
+	@echo "==> Docker build"
+	docker build -t nomad-firehose-local .
+
+# Start docker shell
+.PHONY: docker-shell
+docker-shell: docker-build
+	@echo "==> Docker run"
+	@docker run --rm -it nomad-firehose-local bash
+
+.PHONY: docker-release
+docker-release: docker-build
 	@echo "=> build and push Docker image ..."
-	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
-	docker build -f Dockerfile -t seatgeek/nomad-firehose:$(COMMIT) .
-	docker tag seatgeek/nomad-firehose:$(COMMIT) seatgeek/nomad-firehose:$(TAG)
+	docker tag nomad-firehose-local seatgeek/nomad-firehose:$(TAG)
 	docker push seatgeek/nomad-firehose:$(TAG)
