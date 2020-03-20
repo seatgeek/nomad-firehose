@@ -35,6 +35,11 @@ build:
 fmt:
 	gofmt -w .
 
+# vet go source code
+.PHONY: vet
+vet:
+	go vet ./...
+
 # Run full test suite
 .PHONY: test
 test: dependencies

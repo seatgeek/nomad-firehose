@@ -97,7 +97,7 @@ func (s *MongodbSink) Stop() {
 	log.Infof("[sink/mongodb] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
-		log.Info("[sink/mongodb] Waiting for queue to drain - (%d messages left)", len(s.putCh))
+		log.Infof("[sink/mongodb] Waiting for queue to drain - (%d messages left)", len(s.putCh))
 		time.Sleep(1 * time.Second)
 	}
 
