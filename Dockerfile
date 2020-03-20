@@ -7,5 +7,6 @@ COPY . .
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags "-X main.GitCommit=$(git describe --tags)"
 
 FROM debian:buster
+RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
 COPY --from=go-builder /go/src/app/nomad-firehose /bin/
 CMD [ "/bin/nomad-firehose" ]
