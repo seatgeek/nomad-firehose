@@ -1,0 +1,52 @@
+module github.com/seatgeek/nomad-firehose
+
+go 1.14
+
+require (
+	github.com/Shopify/sarama v1.19.0
+	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
+	github.com/aws/aws-sdk-go v1.25.41
+	github.com/davecgh/go-spew v1.1.1
+	github.com/eapache/go-resiliency v1.1.0
+	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+	github.com/eapache/queue v1.1.0
+	github.com/garyburd/redigo v1.6.0
+	github.com/go-stack/stack v1.7.0
+	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+	github.com/gorhill/cronexpr v0.0.0-20140423231348-a557574d6c02
+	github.com/hashicorp/consul v1.3.0
+	github.com/hashicorp/errwrap v1.0.0
+	github.com/hashicorp/go-cleanhttp v0.0.0-20171218145408-d5fe4b57a186
+	github.com/hashicorp/go-immutable-radix v0.0.0-20170725221215-8aac27015308
+	github.com/hashicorp/go-msgpack v0.0.0-20150518234257-fa3f63826f7c
+	github.com/hashicorp/go-multierror v0.0.0-20150916205742-d30f09973e19
+	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90
+	github.com/hashicorp/go-version v0.0.0-20170202080759-03c5bf6be031
+	github.com/hashicorp/golang-lru v0.0.0-20160207214719-a0d98a5f2880
+	github.com/hashicorp/hcl v0.0.0-20161101180025-6e968a3fcdcb
+	github.com/hashicorp/nomad v0.8.6
+	github.com/hashicorp/raft v1.0.1-0.20180117202925-077966dbc90f
+	github.com/hashicorp/serf v0.8.2-0.20180809141758-19bbd39e421b
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/mitchellh/copystructure v0.0.0-20170525013902-d23ffcb85de3
+	github.com/mitchellh/go-homedir v1.0.0
+	github.com/mitchellh/hashstructure v0.0.0-20160118175604-1ef5c71b025a
+	github.com/mitchellh/mapstructure v1.1.1-0.20181001021442-5a380f224700
+	github.com/mitchellh/reflectwalk v1.0.0
+	github.com/mongodb/mongo-go-driver v0.0.17
+	github.com/nsqio/go-nsq v1.0.7
+	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+	github.com/seatgeek/logrus-gelf-formatter v0.0.0-20180829220724-ce23ecb3f367
+	github.com/sirupsen/logrus v1.0.2-0.20170719154753-00386b3fbd63
+	github.com/streadway/amqp v0.0.0-20181107104731-27835f1a64e9
+	github.com/ugorji/go v0.0.0-20170620060102-0053ebfd9d0e
+	github.com/xdg/scram v0.0.0-20180714160537-b32d4bd2c91c
+	github.com/xdg/stringprep v1.0.1-0.20180714160509-73f8eece6fdc
+	golang.org/x/crypto v0.0.0-20181106171534-e4dc69e5b2fd
+	golang.org/x/net v0.0.0-20181108082009-03003ca0c849
+	golang.org/x/sync v0.0.0-20171101214715-fd80eb99c8f6
+	golang.org/x/sys v0.0.0-20181107165924-66b7b1311ac8
+	golang.org/x/text v0.3.0
+	gopkg.in/urfave/cli.v1 v1.20.0
+)

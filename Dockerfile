@@ -1,15 +1,11 @@
-FROM golang:1.11-alpine
+FROM golang:1.14.1 as go-builder
+WORKDIR /go/src/app
+ENV CGO_ENABLED=0
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags "-X main.GitCommit=$(git describe --tags)"
 
-# Adding ca-certificates for external communication and git for dep installation
-RUN apk add --update ca-certificates git && rm -rf /var/cache/apk/*
-
-RUN go get -u github.com/golang/dep/cmd/dep
-WORKDIR /go/src/github.com/seatgeek/nomad-firehose/
-COPY . /go/src/github.com/seatgeek/nomad-firehose/
-RUN dep ensure -vendor-only
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o build/nomad-firehose -ldflags "-X main.GitCommit=$(git describe --tags)"
-
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-COPY --from=0 /go/src/github.com/seatgeek/nomad-firehose/build/nomad-firehose /usr/local/bin/
-CMD [ "nomad-firehose" ]
+FROM debian:buster
+COPY --from=go-builder /go/src/app/nomad-firehose /bin/
+CMD [ "/bin/nomad-firehose" ]
