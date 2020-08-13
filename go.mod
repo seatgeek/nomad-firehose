@@ -35,5 +35,6 @@ require (
 	github.com/ugorji/go v0.0.0-20170620060102-0053ebfd9d0e // indirect
 	github.com/xdg/scram v0.0.0-20180714160537-b32d4bd2c91c // indirect
 	github.com/xdg/stringprep v1.0.1-0.20180714160509-73f8eece6fdc // indirect
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0
 )
