@@ -38,7 +38,6 @@ func NewEventBus() (*EBSink, error) {
 	})
 
 	fmt.Println(resp)
-	fmt.Println("Eventbridge activated")
 
 	err := req.Send()
 
@@ -58,7 +57,6 @@ func NewEventBus() (*EBSink, error) {
 
 // Start ...
 func (s *EBSink) Start() error {
-	fmt.Println("Eventbridge start func")
 	// Stop chan for all tasks to depend on
 	s.stopCh = make(chan interface{})
 
@@ -79,7 +77,6 @@ func (s *EBSink) Start() error {
 
 // Stop ...
 func (s *EBSink) Stop() {
-	fmt.Println("Eventbridge stop func")
 	log.Infof("[sink/eventbridge] ensure writer queue is empty (%d messages left)", len(s.putCh))
 
 	for len(s.putCh) > 0 {
@@ -92,14 +89,12 @@ func (s *EBSink) Stop() {
 
 // Put ..
 func (s *EBSink) Put(data []byte) error {
-	fmt.Println("Eventbridge put func")
 	s.putCh <- data
 
 	return nil
 }
 
 func (s *EBSink) batch() {
-	fmt.Println("Eventbridge batch func")
 	buffer := make([][]byte, 0)
 	ticker := time.NewTicker(1 * time.Second)
 
@@ -128,7 +123,6 @@ func (s *EBSink) batch() {
 }
 
 func (s *EBSink) write() {
-	fmt.Println("Eventbridge write func")
 	log.Infof("[sink/eventbridge] Starting writer")
 
 	for {
@@ -172,7 +166,6 @@ func (s *EBSink) write() {
 }
 
 func (s *EBSink) sendBatch(entries []*eventbridge.PutEventsRequestEntry) error {
-	fmt.Println("Eventbridge sendBatch func")
 	req, _ := s.eventbridge.PutEventsRequest(&eventbridge.PutEventsInput{
 		Entries: entries,
 	})
