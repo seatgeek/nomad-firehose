@@ -145,18 +145,6 @@ func (s *EBSink) write() {
 			}
 
 			err := s.sendBatch(entries)
-			if err != nil {
-				for i, el := range entries {
-					err = s.sendBatch([]*eventbridge.PutEventsRequestEntry{el})
-					if err != nil {
-						log.Errorf("[sink/eventbridge] Retry failed for %d: %s", i, err)
-					} else {
-						log.Infof("[sink/eventbridge] Retry succeeded for %d", i)
-					}
-				}
-
-				continue
-			}
 
 			if err != nil {
 				log.Errorf("[sink/eventbridge] %s", err)
