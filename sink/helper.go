@@ -9,7 +9,7 @@ import (
 func GetSink(resourceName string) (Sink, error) {
 	sinkType := os.Getenv("SINK_TYPE")
 	if sinkType == "" {
-		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, http, kafka, kinesis, mongodb, nsq, rabbitmq, redis, sqs, stdout, syslog")
+		return nil, fmt.Errorf("Missing SINK_TYPE: amqp, http, kafka, kinesis, mongodb, nsq, rabbitmq, redis, sqs, stdout, syslog, eventbridge")
 	}
 
 	switch sinkType {
@@ -35,7 +35,9 @@ func GetSink(resourceName string) (Sink, error) {
 		return NewSyslog()
 	case "sqs":
 		return NewSQS(resourceName)
+	case "eventbridge":
+		return NewEventBus()
 	default:
-		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, http, kafka, kinesis, mongodb, nsq, rabbitmq, redis, sqs, stdout, syslog", sinkType)
+		return nil, fmt.Errorf("Invalid SINK_TYPE: %s, Valid values: amqp, http, kafka, kinesis, mongodb, nsq, rabbitmq, redis, sqs, eventbridge, stdout, syslog", sinkType)
 	}
 }
