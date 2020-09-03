@@ -80,6 +80,7 @@ The sink type is configured using `$SINK_TYPE` environment variable. Valid value
 - `kafka`
 - `mongo`
 - `sqs`
+- `eventbridge`
 - `stdout`
 - `syslog`
 
@@ -103,6 +104,8 @@ The `syslog` sink is configured using `$SINK_SYSLOG_PROTO` (e.g. `tcp`, `udp` - 
 
 The `sqs` sink is configured using `$SINK_SQS_QUEUE_NAME` which is the name of the queue in SQS. This queue is expected to be a FIFO queue.
 The URL of the queue is inferred by the presence of the `AWS_REGION` and `AWS_ACCOUNT_ID` env variables.
+
+The `eventbridge` sink is configured using `$SINK_EVENT_BUS_NAME` which is the name of the bus in Event Bridge. The environment variables `SINK_EVENT_BUS_DETAIL_TYPE` and `SINK_EVENT_BUS_SOURCE` are used to configure the schema when creating Event Bus rules.
 
 ### `allocations`
 
