@@ -3,7 +3,6 @@ package sink
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,6 +16,8 @@ type EBSink struct {
 	session     *session.Session
 	eventbridge *eventbridge.EventBridge
 	busName     string
+	detailType  string
+	source      string
 	stopCh      chan interface{}
 	putCh       chan []byte
 	batchCh     chan [][]byte
@@ -25,6 +26,8 @@ type EBSink struct {
 // New Event Bus ...
 func NewEventBus() (*EBSink, error) {
 	busName := os.Getenv("SINK_EVENT_BUS_NAME")
+	detailType := os.Getenv("SINK_EVENT_BUS_DETAIL_TYPE")
+	ebSource := os.Getenv("SINK_EVENT_BUS_SOURCE")
 
 	if busName == "" {
 		return nil, fmt.Errorf("[sink/eventbridge] Missing SINK_EVENT_BUS_NAME")
@@ -33,11 +36,9 @@ func NewEventBus() (*EBSink, error) {
 	sess := session.Must(session.NewSession())
 	svc := eventbridge.New(sess)
 
-	req, resp := svc.DescribeEventBusRequest(&eventbridge.DescribeEventBusInput{
+	req, _ := svc.DescribeEventBusRequest(&eventbridge.DescribeEventBusInput{
 		Name: aws.String(busName),
 	})
-
-	fmt.Println(resp)
 
 	err := req.Send()
 
@@ -48,7 +49,9 @@ func NewEventBus() (*EBSink, error) {
 	return &EBSink{
 		session:     sess,
 		eventbridge: svc,
-		busName:     *resp.Name,
+		busName:     busName,
+		detailType:  detailType,
+		source:      ebSource,
 		stopCh:      make(chan interface{}),
 		putCh:       make(chan []byte, 1000),
 		batchCh:     make(chan [][]byte, 100),
@@ -132,18 +135,17 @@ func (s *EBSink) write() {
 
 			for _, data := range batch {
 				entry := &eventbridge.PutEventsRequestEntry{
-					EventBusName: aws.String("michael-test"),
+					EventBusName: aws.String(s.busName),
 					Detail:       aws.String(string(data)),
-					DetailType:   aws.String("Nomad Firehose"),
-					Source:       aws.String("com.seatgeekadmin.NomadFirehose"),
+					DetailType:   aws.String(s.detailType),
+					Source:       aws.String(s.source),
 				}
 
 				entries = append(entries, entry)
-				// id = id + 1
 			}
 
 			err := s.sendBatch(entries)
-			if err != nil && strings.Contains(err.Error(), "AWS.SimpleQueueService.BatchRequestTooLong") {
+			if err != nil {
 				for i, el := range entries {
 					err = s.sendBatch([]*eventbridge.PutEventsRequestEntry{el})
 					if err != nil {
@@ -170,7 +172,7 @@ func (s *EBSink) sendBatch(entries []*eventbridge.PutEventsRequestEntry) error {
 		Entries: entries,
 	})
 	err := req.Send()
-	if err == nil { // resp is now filled
+	if err == nil {
 		return err
 	}
 
