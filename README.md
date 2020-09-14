@@ -64,7 +64,14 @@ If you've set a custom prefix, specify that in the `key` ACL entry instead.
 
 ### Kafka
 
-To connect to Kafka with TLS, set the SINK_KAFKA_CA_CERT_PATH to the path to your CA cert file.
+### Enable TLS to encrypt data in transit
+To enable TLS communication between client and broker set `SINK_KAFKA_ENABLE_TLS` to `true`. Note that this will be enabled automatically by using [TLS client authentication](#tls)
+
+### Client authentication
+#### TLS
+To connect to Kafka with TLS authentication, set the `SINK_KAFKA_CA_CERT_PATH` to the path to your CA cert file.
+
+#### User/password
 To use SASL/PLAIN authentication, set `$SINK_KAFKA_USER` and `$SINK_KAFKA_PASSWORD` environment variables.
 
 
