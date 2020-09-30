@@ -74,7 +74,7 @@ func (s *NSQSink) Stop() {
 	close(s.stopCh)
 }
 
-func (s *NSQSink) Put(data []byte) error {
+func (s *NSQSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
 	return nil

@@ -106,7 +106,7 @@ func (s *MongodbSink) Stop() {
 }
 
 // Put ..
-func (s *MongodbSink) Put(data []byte) error {
+func (s *MongodbSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
 	return nil

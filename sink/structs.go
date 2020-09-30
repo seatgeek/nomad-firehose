@@ -4,5 +4,10 @@ package sink
 type Sink interface {
 	Start() error
 	Stop()
-	Put(data []byte) error
+	Put(key string, data []byte) error
+}
+
+type Data struct {
+	key   string
+	value []byte
 }

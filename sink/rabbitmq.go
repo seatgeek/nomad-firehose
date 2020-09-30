@@ -98,7 +98,7 @@ func (s *RabbitmqSink) Stop() {
 }
 
 // Put ..
-func (s *RabbitmqSink) Put(data []byte) error {
+func (s *RabbitmqSink) Put(key string, data []byte) error {
 	s.putCh <- data
 
 	return nil

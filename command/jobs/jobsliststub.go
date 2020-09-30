@@ -37,7 +37,7 @@ func (f *JobListStubFirehose) Publish(update *nomad.JobListStub) {
 		log.Error(err)
 	}
 
-	f.sink.Put(b)
+	f.sink.Put(update.ID, b)
 }
 
 func (f *JobListStubFirehose) watchJobList(job *nomad.JobListStub) {
