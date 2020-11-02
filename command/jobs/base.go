@@ -104,8 +104,6 @@ func (f *FirehoseBase) watch(w WatchJobListFunc) {
 		AllowStale: true,
 	}
 
-	newMax := f.lastChangeIndex
-
 	for {
 		jobs, meta, err := f.nomadClient.Jobs().List(q)
 		if err != nil {
@@ -127,12 +125,8 @@ func (f *FirehoseBase) watch(w WatchJobListFunc) {
 
 		// Iterate jobs and find events that have changed since last run
 		for _, job := range jobs {
-			if job.ModifyIndex <= f.lastChangeIndex {
+			if job.JobSummary.ModifyIndex <= f.lastChangeIndex {
 				continue
-			}
-
-			if job.ModifyIndex > newMax {
-				newMax = job.ModifyIndex
 			}
 
 			w(job)
@@ -140,6 +134,6 @@ func (f *FirehoseBase) watch(w WatchJobListFunc) {
 
 		// Update WaitIndex and Last Change Time for next iteration
 		q.WaitIndex = meta.LastIndex
-		f.lastChangeIndex = newMax
+		f.lastChangeIndex = meta.LastIndex
 	}
 }
