@@ -167,7 +167,7 @@ func (f *Firehose) watch() {
 		for _, allocation := range allocations {
 			for taskName, taskInfo := range allocation.TaskStates {
 				for _, taskEvent := range taskInfo.Events {
-					if taskEvent.Time <= f.lastChangeTime {
+					if taskEvent.Time <= newMax {
 						continue
 					}
 

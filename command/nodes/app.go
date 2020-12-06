@@ -143,7 +143,7 @@ func (f *Firehose) watch() {
 
 		// Iterate clients and find events that have changed since last run
 		for _, client := range clients {
-			if client.ModifyIndex <= f.lastChangeIndex {
+			if client.ModifyIndex < newMax {
 				continue
 			}
 

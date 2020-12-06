@@ -151,7 +151,7 @@ func (f *Firehose) watch() {
 
 		// Iterate deployments and find events that have changed since last run
 		for _, deployment := range deployments {
-			if deployment.ModifyIndex <= f.lastChangeTime {
+			if deployment.ModifyIndex <= newMax {
 				continue
 			}
 
